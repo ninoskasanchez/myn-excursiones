@@ -74,6 +74,14 @@ const STORED: Record<string, FacetId> = {
   ecological: 'nature',
   'full-day': 'full-day',
   'half-day': 'half-day',
+  island: 'island',
+  snorkel: 'snorkel',
+  wildlife: 'wildlife',
+  offroad: 'offroad',
+  party: 'party',
+  lunch: 'lunch',
+  family: 'family',
+  vip: 'vip',
 };
 
 /** Every hashtag that applies to a tour. */

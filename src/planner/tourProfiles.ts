@@ -514,11 +514,53 @@ const FALLBACK_PROFILE: TourProfile = {
   audience: { solo: 2, couple: 2, family: 2, friends: 2, multigen: 2 },
 };
 
+
+// New records carry their own profile key across locales, so bundles stay
+// distinct even when their titles mention several of the existing tours.
+type CatalogueProfile = Pick<TourProfile, 'key' | 'categoryGroup' | 'emoji' | 'durationHours' | 'slot' | 'intensity' | 'water' | 'boat' | 'mobility' | 'tags'>
+  & Partial<Pick<TourProfile, 'earlyStart' | 'luxury' | 'conflicts' | 'minAge'>>;
+
+const CATALOGUE_PROFILES: CatalogueProfile[] = [
+  { key: 'sacred-river', categoryGroup: 'adventure_park', emoji: '💧', durationHours: 3.5, slot: 'half', intensity: 2, water: 2, boat: 0, mobility: 2, minAge: 3, tags: { relax: 2, views_photo: 3, culture: 2 }, conflicts: ['sacred-river-night'] },
+  { key: 'sacred-river-night', categoryGroup: 'adventure_park', emoji: '🌙', durationHours: 4, slot: 'evening', intensity: 2, water: 2, boat: 0, mobility: 2, minAge: 3, tags: { nightlife: 3, food_drink: 3, views_photo: 2 } },
+  { key: 'los-haitises', categoryGroup: 'culture', emoji: '🌿', durationHours: 10, slot: 'full', intensity: 2, water: 1, boat: 2, mobility: 2, earlyStart: true, tags: { views_photo: 3, wildlife: 3, culture: 2 }, conflicts: ['montana_redonda'] },
+  { key: 'haitises-cayo', categoryGroup: 'island_day', emoji: '🌿', durationHours: 11, slot: 'full', intensity: 2, water: 2, boat: 3, mobility: 2, earlyStart: true, tags: { beach_island: 3, views_photo: 3, wildlife: 3 }, conflicts: ['los-haitises'] },
+  { key: 'la-hacienda', categoryGroup: 'adventure_park', emoji: '🌳', durationHours: 7, slot: 'full', intensity: 4, water: 1, boat: 0, mobility: 3, tags: { offroad: 3, adrenaline: 3, views_photo: 2 } },
+  { key: 'ojos-indigenas', categoryGroup: 'wildlife', emoji: '💧', durationHours: 3, slot: 'short', intensity: 1, water: 1, boat: 0, mobility: 2, tags: { relax: 3, views_photo: 3, wildlife: 2 } },
+  { key: 'catalina-scuba', categoryGroup: 'island_day', emoji: '🤿', durationHours: 9, slot: 'full', intensity: 4, water: 3, boat: 3, mobility: 3, earlyStart: true, minAge: 12, tags: { snorkel_reef: 3, wildlife: 3, beach_island: 2 }, conflicts: ['catalina_reef', 'catalina-altos'] },
+  { key: 'bavaro-discover-scuba', categoryGroup: 'watersport', emoji: '🤿', durationHours: 4, slot: 'half', intensity: 3, water: 3, boat: 1, mobility: 2, minAge: 10, tags: { snorkel_reef: 3, wildlife: 2, adrenaline: 2 } },
+  { key: 'marinarium', categoryGroup: 'watersport', emoji: '🐠', durationHours: 4, slot: 'half', intensity: 2, water: 3, boat: 2, mobility: 2, tags: { snorkel_reef: 3, wildlife: 3 } },
+  { key: 'helicopter', categoryGroup: 'aerial', emoji: '🚁', durationHours: 2, slot: 'short', intensity: 2, water: 0, boat: 0, mobility: 1, luxury: 3, tags: { views_photo: 3, adrenaline: 2 } },
+  { key: 'sunset-catamaran', categoryGroup: 'boat_party', emoji: '🌅', durationHours: 3, slot: 'evening', intensity: 1, water: 1, boat: 2, mobility: 1, tags: { relax: 3, views_photo: 3, beach_island: 1 } },
+  { key: 'private-catamaran', categoryGroup: 'boat_party', emoji: '⛵', durationHours: 3, slot: 'half', intensity: 1, water: 1, boat: 2, mobility: 1, luxury: 3, tags: { relax: 3, snorkel_reef: 2, views_photo: 2 } },
+  { key: 'monkeyland-zipline', categoryGroup: 'adventure_park', emoji: '🐒', durationHours: 8, slot: 'full', intensity: 4, water: 0, boat: 0, mobility: 3, tags: { wildlife: 3, adrenaline: 3, views_photo: 2 }, conflicts: ['monkeyland', 'zipline', 'monkeyland-buggies', 'triple-adventure', 'buggy-zipline'] },
+  { key: 'monkeyland-buggies', categoryGroup: 'offroad', emoji: '🐒', durationHours: 8, slot: 'full', intensity: 4, water: 1, boat: 0, mobility: 2, tags: { wildlife: 3, offroad: 3, adrenaline: 2 }, conflicts: ['monkeyland', 'buggies', 'triple-adventure', 'buggy-zipline'] },
+  { key: 'triple-adventure', categoryGroup: 'adventure_park', emoji: '🌳', durationHours: 9, slot: 'full', intensity: 5, water: 1, boat: 0, mobility: 3, tags: { wildlife: 3, offroad: 3, adrenaline: 3 }, conflicts: ['monkeyland', 'zipline', 'buggies', 'buggy-zipline'] },
+  { key: 'buggy-zipline', categoryGroup: 'offroad', emoji: '🏁', durationHours: 6, slot: 'half', intensity: 4, water: 0, boat: 0, mobility: 3, tags: { offroad: 3, adrenaline: 3, views_photo: 2 }, conflicts: ['zipline', 'buggies'] },
+  { key: 'altos-chavon', categoryGroup: 'culture', emoji: '🏛️', durationHours: 8, slot: 'full', intensity: 2, water: 0, boat: 0, mobility: 2, tags: { culture: 3, views_photo: 3 } },
+  { key: 'shopping-cigar-cacao', categoryGroup: 'culture', emoji: '🍫', durationHours: 3, slot: 'short', intensity: 1, water: 0, boat: 0, mobility: 1, tags: { culture: 3, food_drink: 2 } },
+  { key: 'macao-surf', categoryGroup: 'watersport', emoji: '🏄', durationHours: 2, slot: 'short', intensity: 4, water: 3, boat: 0, mobility: 3, tags: { adrenaline: 3, beach_island: 2 } },
+  { key: 'juanillo-vip', categoryGroup: 'boat_party', emoji: '⛵', durationHours: 6, slot: 'half', intensity: 1, water: 1, boat: 2, mobility: 1, luxury: 3, tags: { beach_island: 3, snorkel_reef: 2, relax: 3 } },
+  { key: 'seaquarium', categoryGroup: 'watersport', emoji: '🐠', durationHours: 4, slot: 'half', intensity: 3, water: 3, boat: 2, mobility: 2, minAge: 10, tags: { snorkel_reef: 3, wildlife: 2, adrenaline: 2 } },
+  { key: 'macao-atv', categoryGroup: 'offroad', emoji: '🏁', durationHours: 4, slot: 'half', intensity: 4, water: 0, boat: 0, mobility: 2, tags: { offroad: 3, adrenaline: 3 }, conflicts: ['buggies'] },
+  { key: 'eco-park', categoryGroup: 'wildlife', emoji: '🌿', durationHours: 4, slot: 'half', intensity: 2, water: 1, boat: 0, mobility: 2, tags: { wildlife: 3, relax: 2, culture: 2 } },
+  { key: 'catalina-altos', categoryGroup: 'island_day', emoji: '🏝️', durationHours: 10, slot: 'full', intensity: 2, water: 2, boat: 3, mobility: 2, earlyStart: true, tags: { beach_island: 3, snorkel_reef: 3, culture: 3 }, conflicts: ['catalina_reef', 'altos-chavon'] },
+  { key: 'jet-ski-circuit', categoryGroup: 'watersport', emoji: '🌊', durationHours: 4, slot: 'half', intensity: 4, water: 2, boat: 0, mobility: 2, tags: { adrenaline: 3, views_photo: 2 }, conflicts: ['jet_ski'] },
+];
+
+const PROFILES_BY_KEY = new Map<string, TourProfile>(
+  [...TOUR_PROFILES, ...CATALOGUE_PROFILES.map((profile) => ({ ...FALLBACK_PROFILE, ...profile }))]
+    .map((profile) => [profile.key, profile])
+);
+
 /**
  * Resolve a live catalogue title (EN or ES) to its structured profile.
  * Unknown titles get a neutral profile so newly added tours still show up.
  */
-export const matchTourProfile = (title: string): TourProfile => {
+export const matchTourProfile = (title: string, profileKey?: string): TourProfile => {
+  const explicit = profileKey ? PROFILES_BY_KEY.get(profileKey) : undefined;
+  if (explicit) return explicit;
+
   const clean = String(title ?? '').trim();
   if (!clean) return FALLBACK_PROFILE;
 

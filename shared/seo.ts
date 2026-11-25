@@ -367,10 +367,10 @@ export const describePage = async (env: SeoEnv, url: URL): Promise<PageMeta & { 
 
   if (path === '/tours') {
     const description = say(locale, {
-      en: `All ${tours.length || ''} tours and excursions from ${where} with ${name}: ${tourNames.join(', ')}. Prices per person, hotel pick-up included.`,
-      es: `Los ${tours.length || ''} tours y excursiones desde ${where} con ${name}: ${tourNames.join(', ')}. Precio por persona, recogida en el hotel incluida.`,
-      fr: `Les ${tours.length || ''} excursions depuis ${where} avec ${name} : ${tourNames.join(', ')}. Prix par personne, prise en charge à l’hôtel incluse.`,
-      de: `Alle ${tours.length || ''} Touren und Ausflüge ab ${where} mit ${name}: ${tourNames.join(', ')}. Preise pro Person, Abholung am Hotel inklusive.`,
+      en: `All ${tours.length || ''} tours and excursions from ${where} with ${name}: ${tourNames.join(', ')}. See the excursion pages for prices and hotel pickup options.`,
+      es: `Los ${tours.length || ''} tours y excursiones desde ${where} con ${name}: ${tourNames.join(', ')}. Consulta los precios y la recogida en cada excursión.`,
+      fr: `Les ${tours.length || ''} excursions depuis ${where} avec ${name} : ${tourNames.join(', ')}. Consultez les tarifs et les options de prise en charge pour chaque excursion.`,
+      de: `Alle ${tours.length || ''} Touren und Ausflüge ab ${where} mit ${name}: ${tourNames.join(', ')}. Preise und Abholoptionen findest du beim jeweiligen Ausflug.`,
     }).replace(/\s{2,}/g, ' ');
     const crumb = { name: say(locale, { en: 'Tours', es: 'Tours', fr: 'Excursions', de: 'Touren' }), path: '/tours' };
     return {

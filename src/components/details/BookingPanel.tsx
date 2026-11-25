@@ -8,7 +8,7 @@ import { summariseDescription } from '../../lib/cart';
 import { track } from '../../lib/activity';
 import { playClickFx } from '../../lib/soundEngine';
 import { generateWhatsAppMessage } from '../../utils/whatsapp';
-import { PricingOption, Tour, perPersonTier } from '../../services/toursService';
+import { PricingOption, Tour, perGroupRate, perPersonTier } from '../../services/toursService';
 import AddToCartButton from '../cart/AddToCartButton';
 import PaymentDropdown from '../ui/PaymentDropdown';
 import { siteNames } from '../../utils/brandText';
@@ -46,14 +46,15 @@ const BookingPanel: React.FC<Props> = ({ service, detailsPath, locale }) => {
     ? service.pricingOptions
     : [{ tier: perPersonTier(lang), price: service.price, amount: null }];
   const rate = rates[0];
-  const multi = rates.length > 1;
+  const capacity = service.groupCapacity;
+  const multi = rates.length > 1 && !capacity;
   const [counts, setCounts] = useState<Record<string, number>>(() =>
-    Object.fromEntries(rates.map((option, index) => [option.tier, index === 0 ? 2 : 0]))
+    Object.fromEntries(rates.map((option, index) => [option.tier, index === 0 ? Math.min(2, capacity ?? MAX_PERSONS) : 0]))
   );
   const [date, setDate] = useState('');
 
   const persons = Math.max(1, rates.reduce((sum, option) => sum + (counts[option.tier] ?? 0), 0));
-  const total = rates.reduce((sum, option) => sum + (option.amount ?? 0) * (counts[option.tier] ?? 0), 0);
+  const total = capacity ? rate.amount ?? 0 : rates.reduce((sum, option) => sum + (option.amount ?? 0) * (counts[option.tier] ?? 0), 0);
   const priced = rates.some((option) => option.amount);
   const money = (value: number) => `US$${Number.isInteger(value) ? value : value.toFixed(2)}`;
   const longDate = date
@@ -74,7 +75,7 @@ const BookingPanel: React.FC<Props> = ({ service, detailsPath, locale }) => {
     detailsPath,
     date: date || undefined,
     persons,
-    ...(multi
+    ...(capacity ? { fixedTotal: rate.amount, tier: perGroupRate(lang) } : multi
       ? { quantities: counts, fixedTotal: total > 0 ? total : null, tier: breakdown }
       : { unitPrice: rate.amount ?? null, tier: rate.tier }),
     duration: facts.duration || undefined,
@@ -90,14 +91,14 @@ const BookingPanel: React.FC<Props> = ({ service, detailsPath, locale }) => {
       `Hello ${name}! I would like to book: ${service.title}`,
       `People: ${multi ? breakdown : persons}`,
       `Date: ${longDate || 'flexible — please suggest one'}`,
-      priced ? `Price: ${money(total)}${multi ? '' : ` (${persons} × ${money(rate.amount ?? 0)})`}` : `Price: ${rate.price}`,
+      priced ? `Price: ${money(total)}${multi || capacity ? '' : ` (${persons} × ${money(rate.amount ?? 0)})`}` : `Price: ${rate.price}`,
       'Could you please confirm availability for that day? Thank you!',
     ].join('\n');
     const spanish = [
       `¡Hola ${name}! Quisiera reservar: ${service.title}`,
       `Personas: ${multi ? breakdown : persons}`,
       `Fecha: ${longDate || 'flexible — sugiéranme una'}`,
-      priced ? `Precio: ${money(total)}${multi ? '' : ` (${persons} × ${money(rate.amount ?? 0)})`}` : `Precio: ${rate.price}`,
+      priced ? `Precio: ${money(total)}${multi || capacity ? '' : ` (${persons} × ${money(rate.amount ?? 0)})`}` : `Precio: ${rate.price}`,
       '¿Me confirman la disponibilidad para ese día? ¡Gracias!',
     ].join('\n');
     const url = generateWhatsAppMessage(brandSettings.phoneNumber, lang === 'es' ? spanish : `${english}\n\n${spanish}`);
@@ -108,7 +109,7 @@ const BookingPanel: React.FC<Props> = ({ service, detailsPath, locale }) => {
   const step = (tier: string, delta: number) => {
     playClickFx();
     setCounts((current) => {
-      const next = Math.min(MAX_PERSONS, Math.max(0, (current[tier] ?? 0) + delta));
+      const next = Math.min(capacity ?? MAX_PERSONS, Math.max(0, (current[tier] ?? 0) + delta));
       const updated = { ...current, [tier]: next };
       // Never nobody at all: the first rate keeps at least one person.
       if (Object.values(updated).every((count) => count === 0)) updated[rates[0].tier] = 1;
@@ -127,7 +128,7 @@ const BookingPanel: React.FC<Props> = ({ service, detailsPath, locale }) => {
             <HiMinus />
           </button>
           <output className="dv-book-count tabular-nums" aria-live="polite">{count}</output>
-          <button type="button" onClick={() => step(option.tier, 1)} disabled={count >= MAX_PERSONS} className="dv-book-step grid h-11 w-11 place-items-center" aria-label={`${option.tier} +1`}>
+          <button type="button" onClick={() => step(option.tier, 1)} disabled={count >= (capacity ?? MAX_PERSONS)} className="dv-book-step grid h-11 w-11 place-items-center" aria-label={`${option.tier} +1`}>
             <HiPlus />
           </button>
         </div>
@@ -140,13 +141,17 @@ const BookingPanel: React.FC<Props> = ({ service, detailsPath, locale }) => {
       <div className="dv-book-price flex items-end justify-between gap-3">
         <div>
           <p id="dv-book-title" className="dv-book-label">
-            {multi
+            {capacity
+              ? say({ en: 'Group price', es: 'Precio por grupo', de: 'Gruppenpreis', fr: 'Prix du groupe' })
+              : multi
               ? say({ en: 'Prices', es: 'Precios', de: 'Preise', fr: 'Prix' })
               : say({ en: 'Price per person', es: 'Precio por persona', de: 'Preis pro Person', fr: 'Prix par personne' })}
           </p>
           <p className="dv-book-amount tabular-nums">{rate.amount ? money(rate.amount) : rate.price || '—'}</p>
         </div>
-        <span className="dv-book-tag">{rate.tier}</span>
+        <span className="dv-book-tag">{capacity ? say({
+          en: `Up to ${capacity} guests`, es: `Hasta ${capacity} personas`, de: `Bis zu ${capacity} Personen`, fr: `Jusqu’à ${capacity} personnes`,
+        }) : rate.tier}</span>
       </div>
       {multi && (
         <ul className="dv-book-rates mt-2 flex flex-wrap gap-2">

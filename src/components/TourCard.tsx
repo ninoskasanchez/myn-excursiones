@@ -6,7 +6,7 @@ import { FaWhatsapp } from 'react-icons/fa';
 import { HiCheck, HiChevronDown, HiClock, HiLocationMarker } from 'react-icons/hi';
 import { generateWhatsAppMessage } from '../utils/whatsapp';
 import { useBrand } from '../contexts/BrandContext';
-import { PricingOption, perPersonTier } from '../services/toursService';
+import { PricingOption, perGroupRate, perPersonTier } from '../services/toursService';
 import PaymentDropdown from './ui/PaymentDropdown';
 import AddToCartButton from './cart/AddToCartButton';
 import { summariseDescription } from '../lib/cart';
@@ -20,6 +20,7 @@ interface TourCardProps {
   description: string;
   price: string;
   pricingOptions?: PricingOption[];
+  groupCapacity?: number;
   excursionName: string;
   detailsPath: string;
   enabled?: boolean;
@@ -55,6 +56,7 @@ const TourCard: React.FC<TourCardProps> = ({
   description,
   price,
   pricingOptions = [],
+  groupCapacity,
   excursionName,
   detailsPath,
   enabled = true,
@@ -76,7 +78,8 @@ const TourCard: React.FC<TourCardProps> = ({
   const [open, setOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
   const [persons, setPersons] = useState(2);
-  const totalAmount = useMemo(() => (rate.amount ?? 0) * persons, [rate.amount, persons]);
+  const totalAmount = (rate.amount ?? 0) * (groupCapacity ? 1 : persons);
+  const serviceId = /\/(\d+)/.exec(detailsPath)?.[1];
 
   const formattedSelectedDate = selectedDate
     ? new Intl.DateTimeFormat(localeTag(intl.locale), { dateStyle: 'full' }).format(new Date(`${selectedDate}T00:00:00`))
@@ -89,14 +92,14 @@ const TourCard: React.FC<TourCardProps> = ({
 
   const cartItem = () => ({
     category: 'tours',
-    serviceId: /\/(\d+)/.exec(detailsPath)?.[1],
+    serviceId,
     title,
     image,
     description: facts.intro,
     detailsPath,
     date: selectedDate || undefined,
     persons: Math.max(1, persons),
-    unitPrice: rate.amount ?? null,
+    ...(groupCapacity ? { fixedTotal: rate.amount } : { unitPrice: rate.amount }),
     tier: rate.tier,
     duration: lasts || undefined,
     included: facts.included,
@@ -154,7 +157,7 @@ const TourCard: React.FC<TourCardProps> = ({
               <div>
                 <span className="block font-condensed text-[0.7rem] font-bold uppercase tracking-[0.2em] text-gold-dark">{COPY.from[locale]}</span>
                 <span className="font-display text-[2.3rem] leading-none text-ink">{rate.price || price}</span>
-                <span className="ml-1.5 text-xs font-semibold text-ink-light">{COPY.person[locale]}</span>
+                <span className="ml-1.5 text-xs font-semibold text-ink-light">{groupCapacity ? perGroupRate(locale) : COPY.person[locale]}</span>
               </div>
             )}
             <div className="flex items-center gap-2">
@@ -190,8 +193,9 @@ const TourCard: React.FC<TourCardProps> = ({
                       <input
                         type="number"
                         min="1"
+                        max={groupCapacity}
                         value={persons}
-                        onChange={(event) => setPersons(Math.max(1, Number(event.target.value) || 1))}
+                        onChange={(event) => setPersons(Math.max(1, Math.min(groupCapacity ?? 60, Math.floor(Number(event.target.value) || 1))))}
                         className="w-full rounded-[4px] border border-ink/15 bg-white px-3 py-2.5 text-sm font-semibold text-ink outline-none focus:border-mango"
                       />
                     </label>
@@ -220,6 +224,7 @@ const TourCard: React.FC<TourCardProps> = ({
                     persons={Math.max(1, persons)}
                     bookingDate={formattedSelectedDate}
                     category="tours"
+                    serviceId={serviceId ? Number(serviceId) : undefined}
                     locale={intl.locale}
                     className="w-full"
                   />

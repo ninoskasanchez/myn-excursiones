@@ -3,7 +3,7 @@ import { localeText } from '../lib/localeText';
 import { FormattedMessage } from 'react-intl';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { getContentLocale, useI18n } from '../contexts/I18nContext';
-import { ServiceCategory, Tour, getServiceSlug, getServicesByCategory, perPersonTier } from '../services/toursService';
+import { ServiceCategory, Tour, getServiceSlug, getServicesByCategory, perGroupRate, perPersonTier } from '../services/toursService';
 import { useBrand } from '../contexts/BrandContext';
 import { generateWhatsAppMessage } from '../utils/whatsapp';
 import { getTransferConfig } from '../services/transferConfigService';
@@ -14,7 +14,7 @@ import DetailCarousel from '../components/details/DetailCarousel';
 import DetailNav, { DetailOrigin, planReturnPath } from '../components/details/DetailNav';
 import BookingPanel from '../components/details/BookingPanel';
 import TourGuideSections, { GuideFacts } from '../components/details/TourGuideSections';
-import { TOUR_PROFILES, matchTourProfile } from '../planner/tourProfiles';
+import { matchTourProfile } from '../planner/tourProfiles';
 import { TourGuide, langOf, loadTourGuide } from '../lib/tourGuide';
 import { playClickFx } from '../lib/soundEngine';
 import { track } from '../lib/activity';
@@ -78,7 +78,7 @@ const ServiceDetails: React.FC = () => {
     track('tour_view', { title: service.title, category, locale });
   }, [service?.id, category]);
 
-  const profileOf = (tour: Tour) => matchTourProfile(englishTitles.get(tour.id) ?? tour.title);
+  const profileOf = (tour: Tour) => matchTourProfile(englishTitles.get(tour.id) ?? tour.title, tour.profileKey);
   const profile = service && isTour ? profileOf(service) : null;
 
   useEffect(() => {
@@ -110,7 +110,7 @@ const ServiceDetails: React.FC = () => {
   /** Three more of the same kind first, then whatever comes next. */
   const related = useMemo(() => {
     if (!service || !isTour) return [];
-    const group = TOUR_PROFILES.find((item) => item.key === profile?.key)?.categoryGroup;
+    const group = profile?.key.startsWith('unknown:') ? undefined : profile?.categoryGroup;
     const others = services.filter((item) => item.id !== service.id);
     const sameKind = group ? others.filter((item) => profileOf(item).categoryGroup === group) : [];
     const rest = others.filter((item) => !sameKind.includes(item));
@@ -288,7 +288,7 @@ const ServiceDetails: React.FC = () => {
           {isTour && rate.amount ? (
             <p className="dv-head-price">
               {localeText(locale, { en: 'from', es: 'desde', de: 'ab', fr: 'dès' })} <strong>{money(rate.amount)}</strong>{' '}
-              {localeText(locale, { en: 'per person', es: 'por persona', de: 'pro Person', fr: 'par personne' })}
+              {service.groupCapacity ? perGroupRate(lang) : localeText(locale, { en: 'per person', es: 'por persona', de: 'pro Person', fr: 'par personne' })}
             </p>
           ) : null}
         </header>
@@ -494,7 +494,7 @@ const ServiceDetails: React.FC = () => {
           {isTour && (
             <aside id="dv-booking" className="dv-aside scroll-mt-28">
               <div className="dv-aside-inner lg:sticky lg:top-24">
-                <BookingPanel service={service} detailsPath={detailsPath} locale={locale} />
+                <BookingPanel key={`${locale}-${service.id}`} service={service} detailsPath={detailsPath} locale={locale} />
               </div>
             </aside>
           )}
@@ -510,7 +510,7 @@ const ServiceDetails: React.FC = () => {
             </Link>
           )}
           <div className="min-w-0 flex-1 leading-tight">
-            <span className="dv-bar-label block">{localeText(locale, { en: 'per person', es: 'por persona', de: 'pro Person', fr: 'par personne' })}</span>
+            <span className="dv-bar-label block">{service.groupCapacity ? perGroupRate(lang) : localeText(locale, { en: 'per person', es: 'por persona', de: 'pro Person', fr: 'par personne' })}</span>
             <span className="dv-bar-price block tabular-nums">{rate.amount ? money(rate.amount) : rate.price}</span>
           </div>
           <button type="button" onClick={scrollToBooking} className="dv-bar-book shrink-0">

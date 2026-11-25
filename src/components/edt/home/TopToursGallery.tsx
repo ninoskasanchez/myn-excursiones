@@ -5,7 +5,7 @@ import { HiArrowRight, HiClock, HiLocationMarker } from 'react-icons/hi';
 import AutoScrollGallery from '../AutoScrollGallery';
 import { useI18n, type Locale } from '../../../contexts/I18nContext';
 import { useBrand } from '../../../contexts/BrandContext';
-import { getServiceSlug, Tour } from '../../../services/toursService';
+import { getServiceSlug, perGroupRate, Tour } from '../../../services/toursService';
 import { generateWhatsAppMessage } from '../../../utils/whatsapp';
 import { descriptionField, smallImage, useTours } from '../../../edt/useTours';
 import { playClickFx } from '../../../lib/soundEngine';
@@ -60,7 +60,7 @@ export const RankedTourCard: React.FC<{ tour: Tour; rank: number; locale: Locale
           <div>
             <span className="block font-condensed text-[0.7rem] font-bold uppercase tracking-[0.2em] text-gold-dark">{COPY.from[locale]}</span>
             <span className="font-display text-[2.3rem] leading-none text-ink">{tour.price}</span>
-            <span className="ml-1.5 text-xs font-semibold text-ink-light">{COPY.person[locale]}</span>
+            <span className="ml-1.5 text-xs font-semibold text-ink-light">{tour.groupCapacity ? perGroupRate(locale) : COPY.person[locale]}</span>
           </div>
           <div className="flex gap-2">
             <Link to={path} onClick={() => playClickFx()} className="grid h-11 w-11 place-items-center rounded-[3px] text-ink ring-1 ring-ink/15 transition hover:bg-ink hover:text-paper" aria-label={COPY.details[locale]} draggable={false}>

@@ -4,7 +4,7 @@ import { FaWhatsapp, FaYoutube } from 'react-icons/fa';
 import { HiArrowsExpand, HiCheck, HiChevronLeft, HiChevronRight, HiClock, HiLocationMarker, HiPlay } from 'react-icons/hi';
 import { useI18n, type Locale } from '../../../contexts/I18nContext';
 import { useBrand } from '../../../contexts/BrandContext';
-import type { Tour } from '../../../services/toursService';
+import { perGroupRate, type Tour } from '../../../services/toursService';
 import { DEFAULT_INSPIRE, getInspireConfig, InspireConfig } from '../../../edt/inspireConfig';
 import { descriptionField, excerpt, includedItems, loadTours, smallImage } from '../../../edt/useTours';
 import { useSocialAccounts } from '../brand';
@@ -234,7 +234,7 @@ const TourStage: React.FC<{
           <div>
             <span className="block font-condensed text-[1.1vw] font-bold uppercase tracking-[0.2em] text-gold-light">{COPY.from[locale]}</span>
             <span className="font-display text-[5.2vw] leading-none text-white">{tour.price}</span>
-            <span className="ml-2 text-[1.1vw] text-white/70">{COPY.person[locale]}</span>
+            <span className="ml-2 text-[1.1vw] text-white/70">{tour.groupCapacity ? perGroupRate(locale) : COPY.person[locale]}</span>
           </div>
           <button type="button" onClick={onVideos} className="inspire-cta">
             <FaYoutube className="h-[1.8vw] w-[1.8vw]" /> {COPY.watch[locale]}

@@ -10,6 +10,7 @@
  * returns a DayPlan. No network, no React — which makes it easy to reason about
  * and cheap to recompute on every answer change.
  */
+import { localeText } from '../lib/localeText';
 import type { PlannerCopy } from './copy';
 import type { DaySlot, InterestKey, PartyType, TourProfile } from './tourProfiles';
 import type {
@@ -117,7 +118,7 @@ export const priceTour = (
   // A jet ski is one price for one or two riders, so the group pays per
   // machine and the per-person figure is what that works out to.
   const seats = entry.profile.seatsPerUnit ?? 1;
-  const qty = seats > 1 ? Math.ceil(heads / seats) : heads;
+  const qty = entry.tour.groupCapacity ? 1 : seats > 1 ? Math.ceil(heads / seats) : heads;
   const total = unit * qty;
 
   return {
@@ -159,7 +160,8 @@ const hardExclusion = (
 export const scoreTour = (
   entry: CatalogueEntry,
   profile: TravelProfile,
-  copy: PlannerCopy
+  copy: PlannerCopy,
+  locale = 'en'
 ): ScoredTour => {
   const tp = entry.profile;
   const pricing = priceTour(entry, profile, copy);
@@ -167,7 +169,11 @@ export const scoreTour = (
   const reasons: string[] = [];
   const cautions: string[] = [];
 
-  const excluded = hardExclusion(tp, profile, copy);
+  const capacity = entry.tour.groupCapacity;
+  const tooMany = capacity && profile.adults + profile.children > capacity;
+  const excluded = tooMany
+    ? localeText(locale, { en: `Up to ${capacity} guests per group`, es: `Hasta ${capacity} personas por grupo`, de: `Bis zu ${capacity} Personen pro Gruppe`, fr: `Jusqu’à ${capacity} personnes par groupe` })
+    : hardExclusion(tp, profile, copy);
 
   // 1. Interests — the heaviest single signal.
   const selected = profile.interests;
@@ -369,7 +375,7 @@ export const buildPlan = (
   const banned = options.banned ?? [];
 
   const scored = catalogue
-    .map((entry) => scoreTour(entry, profile, copy))
+    .map((entry) => scoreTour(entry, profile, copy, locale))
     .sort((a, b) => b.score - a.score);
 
   const available = scored.filter((item) => !item.excluded);

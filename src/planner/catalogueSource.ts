@@ -6,14 +6,19 @@
  * hiccup) we fall back to the static bundle in /data so the planner never shows
  * an empty day.
  */
-import { getServiceSlug, getTours, perPersonTier, Tour } from '../services/toursService';
+import { getServiceSlug, getTours, perGroupRate, perPersonTier, Tour } from '../services/toursService';
 import { matchTourProfile } from './tourProfiles';
 import type { CatalogueEntry } from './types';
 
 type Locale = 'en' | 'es' | 'de' | 'fr';
 
 interface RawTour {
+  id?: number;
   title?: string;
+  duration?: string;
+  destination?: string;
+  profileKey?: string;
+  groupCapacity?: number;
   description?: string;
   price?: string;
   pricing?: Array<{ tier?: string; price?: string }>;
@@ -37,13 +42,17 @@ const normalizeStatic = (raw: RawTour, index: number, locale: Locale): Tour => {
     (raw.pricing ?? []).map((tier) => tier.price?.trim()).find(Boolean) ||
     String(raw.price ?? '').trim();
   const pricingOptions = price
-    ? [{ tier: perPersonTier(locale), price, amount: amountFrom(price) }]
+    ? [{ tier: raw.groupCapacity ? perGroupRate(locale) : perPersonTier(locale), price, amount: amountFrom(price) }]
     : [];
 
   const image = images[0] || '/imgs/placeholder.jpg';
 
   return {
-    id: index + 1,
+    id: raw.id ?? index + 1,
+    duration: raw.duration,
+    destination: raw.destination,
+    profileKey: raw.profileKey,
+    groupCapacity: raw.groupCapacity,
     image,
     title: String(raw.title ?? '').trim(),
     description: String(raw.description ?? '').trim(),
@@ -83,6 +92,6 @@ export const buildCatalogue = (tours: Tour[]): CatalogueEntry[] =>
     .filter((tour) => tour && tour.title)
     .map((tour) => ({
       tour,
-      profile: matchTourProfile(tour.title),
+      profile: matchTourProfile(tour.title, tour.profileKey),
       slug: getServiceSlug(tour),
     }));

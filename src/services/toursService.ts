@@ -40,6 +40,9 @@ interface RawService {
   tags?: string[];
   destination?: string;
   duration?: string;
+  profileKey?: string;
+  /** A fixed price for one group up to this many guests. */
+  groupCapacity?: number;
 }
 
 export interface PricingOption {
@@ -70,6 +73,9 @@ export interface Tour {
   tags?: string[];
   destination?: string;
   duration?: string;
+  profileKey?: string;
+  /** A fixed price for one group up to this many guests. */
+  groupCapacity?: number;
 }
 
 const extractAmountFromPrice = (price: string): number | null => {
@@ -109,8 +115,12 @@ export const perPersonTier = (locale: Locale): string => {
   return 'Persons';
 };
 
+export const perGroupRate = (locale: Locale): string => ({
+  en: 'per group', es: 'por grupo', de: 'pro Gruppe', fr: 'par groupe',
+})[locale];
+
 /**
- * Every service is priced at one rate per person.
+ * Use one rate per person or, when groupCapacity is set, one rate for the group.
  *
  * Services used to carry a list of tiers — typically "Adults" and "Children"
  * at different rates. That is gone: there is one price and everybody pays it.
@@ -127,7 +137,7 @@ const normalizePricingOptions = (raw: RawService, locale: Locale): PricingOption
     String(raw.price ?? '').trim();
 
   return price
-    ? [{ tier: perPersonTier(locale), price, amount: extractAmountFromPrice(price) }]
+    ? [{ tier: raw.groupCapacity ? perGroupRate(locale) : perPersonTier(locale), price, amount: extractAmountFromPrice(price) }]
     : [];
 };
 
@@ -137,6 +147,7 @@ const normalizeService = (
   category: ServiceCategory,
   locale: Locale
 ): Tour => {
+  const capacity = Number(rawService.groupCapacity);
   const detailImages = Array.isArray(rawService.images)
     ? rawService.images
         .map((image) => normalizeImagePath(String(image.localPath ?? '').trim()))
@@ -175,6 +186,8 @@ const normalizeService = (
     transferRoutes,
     ...(Array.isArray(rawService.tags) ? { tags: rawService.tags.map((tag) => String(tag).trim()).filter(Boolean) } : {}),
     ...(rawService.destination ? { destination: String(rawService.destination).trim() } : {}),
+    ...(Number.isInteger(capacity) && capacity > 0 ? { groupCapacity: capacity } : {}),
+    ...(rawService.profileKey ? { profileKey: String(rawService.profileKey).trim() } : {}),
     ...(rawService.duration ? { duration: String(rawService.duration).trim() } : {}),
   };
 };
@@ -243,6 +256,8 @@ const serializeToursForSave = (services: Tour[]): RawService[] =>
     })),
     ...(service.tags?.length ? { tags: service.tags } : {}),
     ...(service.destination ? { destination: service.destination } : {}),
+    ...(service.groupCapacity ? { groupCapacity: service.groupCapacity } : {}),
+    ...(service.profileKey ? { profileKey: service.profileKey } : {}),
     ...(service.duration ? { duration: service.duration } : {}),
   }));
 

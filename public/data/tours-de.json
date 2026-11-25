@@ -36,14 +36,6 @@
       {
         "role": "detail_7",
         "localPath": "imgs/edt/tours/saona-island-tour/7.webp"
-      },
-      {
-        "role": "detail_8",
-        "localPath": "imgs/edt/tours/saona-island-tour/8.webp"
-      },
-      {
-        "role": "detail_9",
-        "localPath": "imgs/edt/tours/saona-island-tour/9.webp"
       }
     ],
     "tags": [
@@ -1393,5 +1385,941 @@
     ],
     "destination": "Punta Cana",
     "duration": "5 Stunden"
+  },
+  {
+    "title": "Heiliger Fluss",
+    "description": "Entdecke den Sacred River im Bávaro Adventure Park bei Tageslicht. Wate mit einem Guide durch den unterirdischen Fluss zwischen Kalksteinwänden, bade in der offenen Blue-Lagoon-Cenote und lass dich auf dem Jungle River treiben. Im dominikanischen Dorf lernst du örtliche Traditionen kennen. Zeit am Wasserfallbecken und ein dominikanisches Mittagessen gehören dazu.\n\n**Inklusive**\n• Unterirdischer Sacred River, Blue-Lagoon-Cenote, Jungle River und Wasserfallbecken\n• Besuch im dominikanischen Dorf und ein traditionelles Mittagessen\n• Gemeinsamer Hoteltransfer im Raum Punta Cana und Bávaro, Abholpunkt je nach Hotel\n\n**Gut zu wissen**\n\nPlane etwa dreieinhalb Stunden im Park plus Fahrzeit ein. Im unterirdischen Fluss und in der Cenote sind Wasserschuhe Pflicht. Nimm Badesachen, ein Handtuch und trockene Kleidung mit. Kinder ab drei Jahren können in Begleitung eines Erwachsenen teilnehmen. Getränke zum Mittagessen sind separat erhältlich.\n\n[Abendvariante mit Dinner und Dschungelparty ansehen](/details/tours/62-sacred-river-bei-nacht-dinner-und-dschungelparty)",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$99"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "https://res.cloudinary.com/dkxlhxpe4/image/upload/v1795464640/tours/tusm4jx5gaucxhxp2yzj.jpg"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "https://res.cloudinary.com/dkxlhxpe4/image/upload/v1795464656/tours/zr2cczlbwbspve6xkquu.jpg"
+      },
+      {
+        "role": "detail_3",
+        "localPath": "https://res.cloudinary.com/dkxlhxpe4/image/upload/v1795464675/tours/tt2czbd1t5mbzcop9qd7.jpg"
+      }
+    ],
+    "duration": "3,5 Stunden",
+    "tags": [
+      "water",
+      "nature",
+      "adventure",
+      "family",
+      "half-day",
+      "lunch"
+    ],
+    "destination": "Bávaro",
+    "profileKey": "sacred-river"
+  },
+  {
+    "title": "ScubaDoo · Unterwasser-Scooter",
+    "description": "Erkunde das Riff vor Bávaro mit einem geführten Unterwasser-Scooter. Unter der transparenten Atemhaube hast du freie Sicht. Nach der Einweisung ist je nach Seegang auch eine Schnorchelrunde an der Oberfläche möglich.\n\n**Dauer**  ca. 3,5 Stunden\n\n**Gut zu wissen**\n\nEin Tauchschein ist in der Regel nicht erforderlich. Frag vorab nach Mindestalter, gesundheitlichen Voraussetzungen und Abholung. Bring Badesachen und ein Handtuch mit.",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$69"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "imgs/edt/tours/scubadoo/1.webp"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/scubadoo/2.webp"
+      },
+      {
+        "role": "detail_3",
+        "localPath": "imgs/edt/tours/scubadoo/3.webp"
+      },
+      {
+        "role": "detail_4",
+        "localPath": "imgs/edt/tours/scubadoo/4.webp"
+      }
+    ],
+    "tags": [
+      "water",
+      "adventure",
+      "snorkel",
+      "half-day"
+    ],
+    "destination": "Punta Cana",
+    "duration": "3,5 Stunden",
+    "profileKey": "scuba_doo"
+  },
+  {
+    "title": "Montaña Redonda und die Küste von Miches",
+    "description": "Vom Gipfel der Montaña Redonda blickst du über Lagunen und Berge bis zum Atlantik. Auf den Schaukeln und an den Aussichtspunkten bleibt Zeit für Fotos. Auf Anfrage lässt sich ein Stopp am Strand Playa Esmeralda einplanen.\n\n**Dauer**  ca. 5 Stunden\n\n**Gut zu wissen**\n\nAuf dem Gipfel gibt es wenig Schatten und der Zufahrtsweg kann holprig sein. Bring feste Schuhe, Wasser und Sonnenschutz mit.",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$89"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "imgs/edt/tours/montana-redonda/1.webp"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/montana-redonda/2.webp"
+      },
+      {
+        "role": "detail_3",
+        "localPath": "imgs/edt/tours/montana-redonda/3.webp"
+      }
+    ],
+    "tags": [
+      "nature",
+      "adventure",
+      "half-day"
+    ],
+    "destination": "Miches",
+    "duration": "5 Stunden",
+    "profileKey": "montana_redonda"
+  },
+  {
+    "title": "Nationalpark Los Haitises und Caño Hondo",
+    "description": "Mit dem Boot geht es durch Mangrovenkanäle und vorbei an Kalksteininseln. Je nach Route kommst du an Höhlen mit Felskunst der Taíno vorbei. Frag nach einer Kombination mit den Süßwasserbecken von Caño Hondo oder dem Aussichtspunkt Montaña Redonda.\n\n**Dauer**  ca. 10 Stunden\n\n**Gut zu wissen**\n\nAn den Höhleneingängen kann der Boden uneben sein. Die Anfahrt ab Bávaro dauert länger. Pack griffige Schuhe und einen wasserdichten Beutel ein.\n\n**Bildnachweise**\n\n[Anton Bielousov](https://commons.wikimedia.org/wiki/File:Dominican_Republic_Los_Haitises_birds_island.jpeg) · [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)  \n[Anton Bielousov](https://commons.wikimedia.org/wiki/File:Dominican_republic_Los_Haitises_mangroves.jpeg) · [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$135"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Dominican_Republic_Los_Haitises_birds_island.jpeg/1280px-Dominican_Republic_Los_Haitises_birds_island.jpeg"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Dominican_republic_Los_Haitises_mangroves.jpeg/1280px-Dominican_republic_Los_Haitises_mangroves.jpeg"
+      }
+    ],
+    "tags": [
+      "nature",
+      "cultural",
+      "water",
+      "full-day"
+    ],
+    "destination": "Sabana de la Mar",
+    "duration": "10 Stunden",
+    "profileKey": "los-haitises"
+  },
+  {
+    "title": "Coco Bongo Punta Cana · Abendshow",
+    "description": "Erlebe Live-Akrobatik, Tanz und musikalische Hommagen im Coco Bongo. Bühnenshows wechseln sich mit DJ-Sets ab. Sitzplatz, Zugang und Getränke hängen von der Ticketkategorie ab.\n\n**Dauer**  ca. 5 Stunden\n\n**Gut zu wissen**\n\nNur für Erwachsene. Bring einen amtlichen Lichtbildausweis mit und frag nach Tickets und Transfer für deinen Termin. Rechne mit lauter Musik, Blitzlichtern und vielen Gästen.",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$90"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "imgs/edt/tours/coco-bongo/1.webp"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/coco-bongo/2.webp"
+      },
+      {
+        "role": "detail_3",
+        "localPath": "imgs/edt/tours/coco-bongo/3.webp"
+      }
+    ],
+    "tags": [
+      "party",
+      "adventure",
+      "half-day"
+    ],
+    "destination": "Punta Cana",
+    "duration": "5 Stunden",
+    "profileKey": "coco_bongo"
+  },
+  {
+    "title": "Imagine Punta Cana · Nachtclub in einer Höhle",
+    "description": "Bei Imagine liegt die Tanzfläche mitten in einer natürlichen Höhle mit beleuchteten Felskammern. Welche Musik läuft, hängt vom Abendprogramm ab. Frag nach Veranstaltung, Eintritt, Getränken und Transfer.\n\n**Dauer**  ca. 5 Stunden\n\n**Gut zu wissen**\n\nNur für Erwachsene. Nimm einen amtlichen Lichtbildausweis mit und zieh Schuhe an, in denen du auf Stufen und unebenem Boden sicher gehst. Musik und Lichteffekte sind intensiv.",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$85"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "imgs/edt/tours/imagine-cave/1.webp"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/imagine-cave/2.webp"
+      },
+      {
+        "role": "detail_3",
+        "localPath": "imgs/edt/tours/imagine-cave/3.webp"
+      }
+    ],
+    "tags": [
+      "party",
+      "adventure",
+      "half-day"
+    ],
+    "destination": "Punta Cana",
+    "duration": "5 Stunden",
+    "profileKey": "imagine_cave"
+  },
+  {
+    "title": "La Hacienda Park · Abenteuer in Anamuya",
+    "description": "Verbringe einen Tag in den Hügeln von Anamuya. La Hacienda Park ist für Seilrutschen im Wald, Buggy-Strecken, Sessellift, Ausritte und eine Landsafari bekannt. Frag nach Bademöglichkeiten und dem Programm für deinen Termin.\n\n**Dauer**  ca. 7 Stunden\n\n**Gut zu wissen**\n\nJe nach Aktivität gelten Alters-, Größen- oder Gewichtsgrenzen. Wer fährt, braucht gegebenenfalls einen gültigen Führerschein. Feste Schuhe und Wechselkleidung sind sinnvoll.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*\n\n**Bildnachweise**\n\n[Oleg Yunakov](https://commons.wikimedia.org/wiki/File:Anamuya_mountain_in_Dominican_Republic_-_1.jpg) · [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$99"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Anamuya_mountain_in_Dominican_Republic_-_1.jpg/1280px-Anamuya_mountain_in_Dominican_Republic_-_1.jpg"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/la-hacienda/2.webp"
+      },
+      {
+        "role": "detail_3",
+        "localPath": "imgs/edt/tours/la-hacienda/3.webp"
+      }
+    ],
+    "tags": [
+      "adventure",
+      "offroad",
+      "nature",
+      "full-day"
+    ],
+    "destination": "Anamuya",
+    "duration": "7 Stunden",
+    "profileKey": "la-hacienda"
+  },
+  {
+    "title": "Ojos Indígenas · Ökologisches Reservat",
+    "description": "Schattige Wege führen durch den Küstenwald zu den klaren Süßwasserlagunen des Reservats Ojos Indígenas. Das Wasser sickert durch Kalkstein und sammelt sich in den geschützten Becken. Baden ist in ausgewiesenen Lagunen erlaubt.\n\n**Dauer**  ca. 3 Stunden\n\n**Gut zu wissen**\n\nDer Zugang ist geregelt. Frag nach einer Führung und den derzeit zum Baden freigegebenen Lagunen. Bring feste Schuhe und bei Bedarf Badesachen mit.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$85"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "imgs/edt/tours/ojos-indigenas/1.webp"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/ojos-indigenas/2.webp"
+      }
+    ],
+    "tags": [
+      "nature",
+      "water",
+      "half-day"
+    ],
+    "destination": "Punta Cana",
+    "duration": "3 Stunden",
+    "profileKey": "ojos-indigenas"
+  },
+  {
+    "title": "Insel Catalina · Gerätetauchen",
+    "description": "Vom Boot aus erreichst du die Riffe rund um die Insel Catalina. Die Steilwand und das flachere Aquarium gehören zu den bekanntesten Tauchplätzen. Die Tauchbasis wählt Orte und Tiefen passend zu Brevet, Erfahrung und Bedingungen aus.\n\n**Dauer**  ca. 9 Stunden\n\n**Gut zu wissen**\n\nGib dein Brevet und das Datum deines letzten Tauchgangs an. Kläre Ausrüstung, gesundheitliche Voraussetzungen, Abholung und Zeiten vorab.",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$219"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "imgs/edt/tours/catalina-scuba/1.webp"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/catalina-scuba/2.webp"
+      },
+      {
+        "role": "detail_3",
+        "localPath": "imgs/edt/tours/catalina-scuba/3.webp"
+      },
+      {
+        "role": "detail_4",
+        "localPath": "imgs/edt/tours/catalina-scuba/4.webp"
+      }
+    ],
+    "tags": [
+      "water",
+      "adventure",
+      "island",
+      "snorkel",
+      "full-day"
+    ],
+    "destination": "La Romana",
+    "duration": "9 Stunden",
+    "profileKey": "catalina-scuba"
+  },
+  {
+    "title": "Schnuppertauchen · Riff vor Bávaro",
+    "description": "Probiere unter Aufsicht einer Tauchlehrkraft aus, wie sich das Atmen mit Tauchausrüstung anfühlt. Nach der Einweisung folgen meist Übungen im geschützten Wasser. Bei passenden Bedingungen und erfüllten Voraussetzungen ist ein geführter Tauchgang am flachen Riff möglich.\n\n**Dauer**  ca. 4 Stunden\n\n**Gut zu wissen**\n\nFrag nach Gesundheitsfragebogen, Mindestalter und Ausrüstung. Das ist ein Schnupperangebot. Sag Bescheid, wenn du einen Kurs mit Brevet suchst.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$149"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "imgs/edt/tours/bavaro-discover-scuba/1.webp"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/bavaro-discover-scuba/2.webp"
+      }
+    ],
+    "tags": [
+      "water",
+      "adventure",
+      "snorkel",
+      "half-day"
+    ],
+    "destination": "Bávaro",
+    "duration": "4 Stunden",
+    "profileKey": "bavaro-discover-scuba"
+  },
+  {
+    "title": "Marinarium · Schnorchelfahrt",
+    "description": "Ab Cabeza de Toro geht es zum Schnorcheln vor die Küste von Bávaro. Marinarium ist für seinen abgegrenzten Meeresbereich mit Ammenhaien und Rochen bekannt. Je nach Route kommen eine Küstenfahrt oder ein Stopp im flachen Wasser hinzu.\n\n**Dauer**  ca. 4 Stunden\n\n**Gut zu wissen**\n\nFrag nach der Strecke, den Schwimmanforderungen und Schwimmwesten. Der Ablauf richtet sich nach dem Seegang.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*\n\n**Bildnachweise**\n\n[Stevelaycock21](https://commons.wikimedia.org/wiki/File:Nurse_shark_swimming.jpg) · [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)  \n[Mustang Joe](https://commons.wikimedia.org/wiki/File:Lucas_I_Catamaran.jpg) · [CC0](https://creativecommons.org/publicdomain/zero/1.0/)",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$115"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Nurse_shark_swimming.jpg/1280px-Nurse_shark_swimming.jpg"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d6/Lucas_I_Catamaran.jpg/3840px-Lucas_I_Catamaran.jpg"
+      },
+      {
+        "role": "detail_3",
+        "localPath": "imgs/edt/tours/marinarium/3.webp"
+      }
+    ],
+    "tags": [
+      "water",
+      "adventure",
+      "snorkel",
+      "wildlife",
+      "half-day"
+    ],
+    "destination": "Cabeza de Toro",
+    "duration": "4 Stunden",
+    "profileKey": "marinarium"
+  },
+  {
+    "title": "Punta Cana · Helikopter-Rundflug",
+    "description": "Aus der Luft siehst du, wie Hotelstrände, Riffe und Palmenhaine die Küste von Punta Cana prägen. Die Flugzeit ist deutlich kürzer als der gesamte Ausflug. Längere Routen können je nach Anbieter und Wetter bis in Richtung Macao führen.\n\n**Dauer**  ca. 2 Stunden\n\n**Gut zu wissen**\n\nFrag nach Route, Flugzeit, Transfer und Passagiergrenzen. Bring einen Lichtbildausweis mit und erkundige dich nach den Regeln für Kameras und lose Gegenstände.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$149"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "imgs/edt/tours/helicopter/1.webp"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/helicopter/2.webp"
+      },
+      {
+        "role": "detail_3",
+        "localPath": "imgs/edt/tours/helicopter/3.webp"
+      }
+    ],
+    "tags": [
+      "adventure",
+      "half-day"
+    ],
+    "destination": "Punta Cana",
+    "duration": "2 Stunden",
+    "profileKey": "helicopter"
+  },
+  {
+    "title": "Punta Cana · Katamaran bei Sonnenuntergang",
+    "description": "Am späten Nachmittag geht es gemütlich an der Küste von Punta Cana entlang. Beobachte vom Deck aus, wie das Licht über dem Ufer weicher wird. Je nach Boot und Seegang kann ein Badestopp dazukommen.\n\n**Dauer**  ca. 3 Stunden\n\n**Gut zu wissen**\n\nFrag nach Abfahrtszeit, Abholung und Getränken. Route und Sicht auf den Sonnenuntergang hängen vom Wetter ab.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*\n\n**Bildnachweise**\n\n[CT Cooper](https://commons.wikimedia.org/wiki/File:Punta_Cana_sunset.jpg) · [Public domain](https://creativecommons.org/publicdomain/mark/1.0/)  \n[Mustang Joe](https://commons.wikimedia.org/wiki/File:Lucas_I_Catamaran.jpg) · [CC0](https://creativecommons.org/publicdomain/zero/1.0/)",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$85"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Punta_Cana_sunset.jpg"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d6/Lucas_I_Catamaran.jpg/3840px-Lucas_I_Catamaran.jpg"
+      },
+      {
+        "role": "detail_3",
+        "localPath": "imgs/edt/tours/sunset-catamaran/3.webp"
+      }
+    ],
+    "tags": [
+      "water",
+      "half-day"
+    ],
+    "destination": "Punta Cana",
+    "duration": "3 Stunden",
+    "profileKey": "sunset-catamaran"
+  },
+  {
+    "title": "Bávaro · Privater Katamaran-Charter",
+    "description": "Chartere einen Katamaran für deine Gruppe und bestimme das Tempo der Fahrt vor Bávaro. Je nach Boot und Seegang kannst du am Riff schnorcheln, im flachen Wasser baden oder länger an Deck bleiben.\n\n**Dauer**  ca. 3 Stunden\n\n**Gut zu wissen**\n\nSag uns, ob du Schnorchelausrüstung, Verpflegung oder einen Transfer brauchst.\n\nDer angegebene Preis gilt für einen privaten Katamaran mit bis zu sechs Gästen. Frag nach Extras oder Angeboten für größere Gruppen.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*\n\n**Bildnachweise**\n\n[Mustang Joe](https://commons.wikimedia.org/wiki/File:Lucas_I_Catamaran.jpg) · [CC0](https://creativecommons.org/publicdomain/zero/1.0/)",
+    "pricing": [
+      {
+        "tier": "Gruppe",
+        "price": "$675"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d6/Lucas_I_Catamaran.jpg/3840px-Lucas_I_Catamaran.jpg"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/private-catamaran/2.webp"
+      },
+      {
+        "role": "detail_3",
+        "localPath": "imgs/edt/tours/private-catamaran/3.webp"
+      }
+    ],
+    "tags": [
+      "water",
+      "snorkel",
+      "vip",
+      "half-day"
+    ],
+    "destination": "Punta Cana",
+    "duration": "3 Stunden",
+    "profileKey": "private-catamaran",
+    "groupCapacity": 6
+  },
+  {
+    "title": "Monkeyland und Zipline-Abenteuer",
+    "description": "Kombiniere eine Führung zu den Totenkopfäffchen von Monkeyland mit einem Seilrutschenparcours in den Hügeln von Anamuya. Manche Touren machen an einem Landhaus halt, wo du etwas über den Anbau und die Verarbeitung von Kaffee und Kakao erfährst.\n\n**Dauer**  ca. 8 Stunden\n\n**Gut zu wissen**\n\nFrag nach Alters-, Größen- und Gewichtsgrenzen für die Seilrutschen. Trag feste Schuhe und beachte die Anweisungen des Guides in der Nähe der Tiere.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$130"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "imgs/edt/tours/monkeyland-zipline/1.webp"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/monkeyland-zipline/2.webp"
+      },
+      {
+        "role": "detail_3",
+        "localPath": "imgs/edt/tours/monkeyland-zipline/3.webp"
+      }
+    ],
+    "tags": [
+      "adventure",
+      "wildlife",
+      "nature",
+      "full-day"
+    ],
+    "destination": "Anamuya",
+    "duration": "8 Stunden",
+    "profileKey": "monkeyland-zipline"
+  },
+  {
+    "title": "Monkeyland und Dschungel-Buggys",
+    "description": "Fahre mit dem Buggy über Landwege und besuche anschließend oder davor Monkeyland mit einem Guide. Die Totenkopfäffchen leben in einem bewaldeten Gehege. Auf den Pisten gibt es nach Regen oft Schlamm und Spritzwasser.\n\n**Dauer**  ca. 8 Stunden\n\n**Gut zu wissen**\n\nFrag nach Führerschein, Mindestalter für Mitfahrende und Sitzplätzen. Bring feste Schuhe und Wechselkleidung mit und halte dich im Park an die Regeln zum Schutz der Tiere.\n\nDer Preis pro Person gilt bei zwei Gästen pro Buggy. Frag vor der Buchung nach einem Fahrzeug zur Alleinnutzung.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$135"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "imgs/edt/tours/monkeyland-buggies/1.webp"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/monkeyland-buggies/2.webp"
+      }
+    ],
+    "tags": [
+      "adventure",
+      "offroad",
+      "wildlife",
+      "full-day"
+    ],
+    "destination": "Anamuya",
+    "duration": "8 Stunden",
+    "profileKey": "monkeyland-buggies"
+  },
+  {
+    "title": "Dreifach-Abenteuer · Buggys, Zipline und Monkeyland",
+    "description": "Erlebe drei Aktivitäten in Anamuya an einem Tag: eine Geländefahrt im Buggy, einen Seilrutschenparcours und einen geführten Besuch bei den Totenkopfäffchen in Monkeyland. Reihenfolge und Zeit an den einzelnen Stationen können wechseln.\n\n**Dauer**  ca. 9 Stunden\n\n**Gut zu wissen**\n\nErkundige dich nach den Voraussetzungen jeder Aktivität, insbesondere Führerschein und Grenzen für die Seilrutschen. Pack feste Schuhe, Wasser und unempfindliche Kleidung ein.\n\nDer Preis pro Person gilt bei zwei Gästen pro Buggy. Frag vor der Buchung nach einem Fahrzeug zur Alleinnutzung.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$175"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "imgs/edt/tours/triple-adventure/1.webp"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/triple-adventure/2.webp"
+      },
+      {
+        "role": "detail_3",
+        "localPath": "imgs/edt/tours/triple-adventure/3.webp"
+      }
+    ],
+    "tags": [
+      "adventure",
+      "offroad",
+      "wildlife",
+      "full-day"
+    ],
+    "destination": "Anamuya",
+    "duration": "9 Stunden",
+    "profileKey": "triple-adventure"
+  },
+  {
+    "title": "Dschungel-Buggys und Zipline",
+    "description": "Fahre im Geländebuggy über Landwege und wechsle danach auf den Seilrutschenparcours hoch über dem Waldboden. So erlebst du die Landschaft aus zwei sehr unterschiedlichen Perspektiven.\n\n**Dauer**  ca. 6 Stunden\n\n**Gut zu wissen**\n\nFrag nach Sitzplätzen, Führerschein und Teilnahmegrenzen. Trag feste Schuhe und bring Wechselkleidung für schlammige Pisten mit.\n\nDer Preis pro Person gilt bei zwei Gästen pro Buggy. Frag vor der Buchung nach einem Fahrzeug zur Alleinnutzung.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$125"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "imgs/edt/tours/buggy-zipline/1.webp"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/buggy-zipline/2.webp"
+      },
+      {
+        "role": "detail_3",
+        "localPath": "imgs/edt/tours/buggy-zipline/3.webp"
+      }
+    ],
+    "tags": [
+      "adventure",
+      "offroad",
+      "nature",
+      "half-day"
+    ],
+    "destination": "Anamuya",
+    "duration": "6 Stunden",
+    "profileKey": "buggy-zipline"
+  },
+  {
+    "title": "Altos de Chavón und Cueva de las Maravillas",
+    "description": "Spaziere durch die gepflasterten Gassen von Altos de Chavón, einem Künstlerdorf über dem Río Chavón. Anschließend geht es zur Kalksteinhöhle Cueva de las Maravillas, die für Felskunst der Taíno bekannt ist. Frag nach möglichen Museums- oder Werkstattbesuchen in La Romana.\n\n**Dauer**  ca. 8 Stunden\n\n**Gut zu wissen**\n\nRechne mit Kopfsteinpflaster und Treppen. Trag griffige Schuhe und beachte das Fotoverbot oder andere Schutzregeln, sofern sie vor Ort gelten.\n\n**Bildnachweise**\n\n[Dr. Eugen Lehle](https://commons.wikimedia.org/wiki/File:Altos_de_Chav%C3%B3n.jpg) · [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)  \n[Danu Widjajanto](https://commons.wikimedia.org/wiki/File:Cuevas_de_las_Maravillas.jpg) · [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$125"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "https://upload.wikimedia.org/wikipedia/commons/1/10/Altos_de_Chav%C3%B3n.jpg"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Cuevas_de_las_Maravillas.jpg/1280px-Cuevas_de_las_Maravillas.jpg"
+      }
+    ],
+    "tags": [
+      "cultural",
+      "nature",
+      "full-day"
+    ],
+    "destination": "La Romana",
+    "duration": "8 Stunden",
+    "profileKey": "altos-chavon"
+  },
+  {
+    "title": "Punta Cana · Zigarren, Kakao und lokales Kunsthandwerk",
+    "description": "Schau beim Rollen dominikanischer Zigarren zu und stöbere nach Produkten aus der Region. Je nach Haltestelle kannst du Kakao, Kaffee oder Rum probieren oder lernen, wie man Larimar erkennt, einen blauen Stein aus der Dominikanischen Republik.\n\n**Dauer**  ca. 3 Stunden\n\n**Gut zu wissen**\n\nFrag nach den Werkstätten und Verkostungen auf der Route. Einkäufe sind freiwillig. Angebote mit Alkohol oder Tabak richten sich an Erwachsene.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*\n\n**Bildnachweise**\n\n[Mstyslav Chernov](https://commons.wikimedia.org/wiki/File:Handmade_cigar_production%2C_process._Manufacture_worker._Tabacalera_de_Garcia_Factory._Casa_de_Campo%2C_La_Romana%2C_Dominican_Republic.jpg) · [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$29"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Handmade_cigar_production%2C_process._Manufacture_worker._Tabacalera_de_Garcia_Factory._Casa_de_Campo%2C_La_Romana%2C_Dominican_Republic.jpg/960px-Handmade_cigar_production%2C_process._Manufacture_worker._Tabacalera_de_Garcia_Factory._Casa_de_Campo%2C_La_Romana%2C_Dominican_Republic.jpg"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/shopping-cigar-cacao/2.webp"
+      }
+    ],
+    "tags": [
+      "cultural",
+      "half-day"
+    ],
+    "destination": "Punta Cana",
+    "duration": "3 Stunden",
+    "profileKey": "shopping-cigar-cacao"
+  },
+  {
+    "title": "Playa Macao · Surfkurs",
+    "description": "Lerne die Grundlagen oder verbessere deine Technik mit einem Surfcoach an der Playa Macao. Meist beginnt die Stunde am Strand mit Sicherheitsregeln und Trockenübungen. Dann geht es ins Wasser, wenn die Wellen zu deinem Niveau passen.\n\n**Dauer**  ca. 2 Stunden\n\n**Gut zu wissen**\n\nSag uns, wie gut du schwimmst und welche Surferfahrung du hast. Kläre Dauer, Brett, Lycra und Transfer vorab.\n\n**Bildnachweise**\n\n[Carolinarondon](https://commons.wikimedia.org/wiki/File:Playa_Macao.jpg) · [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$99"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Playa_Macao.jpg"
+      }
+    ],
+    "tags": [
+      "water",
+      "adventure",
+      "half-day"
+    ],
+    "destination": "Macao",
+    "duration": "2 Stunden",
+    "profileKey": "macao-surf"
+  },
+  {
+    "title": "Bávaro · Bananenbootfahrt",
+    "description": "Ein Motorboot zieht das aufblasbare Bananenboot entlang der Küste von Bávaro. Du teilst das Boot mit anderen Fahrgästen und solltest mit Spritzwasser und Bewegung rechnen. Der Anbieter entscheidet je nach Seegang, ob die Fahrt stattfinden kann.\n\n**Dauer**  ca. 1 Stunde\n\n**Gut zu wissen**\n\nFrag nach Schwimmwesten, Mindestalter, Einstieg und Fahrtdauer. Trag Badesachen und lass lose Wertgegenstände an Land.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$19"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "imgs/edt/tours/banana-boat/1.webp"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/banana-boat/2.webp"
+      }
+    ],
+    "tags": [
+      "water",
+      "adventure",
+      "half-day"
+    ],
+    "destination": "Bávaro",
+    "duration": "1 Stunde",
+    "profileKey": "banana_boat"
+  },
+  {
+    "title": "Punta Cana · Jet-Ski-Parcours",
+    "description": "Fahre auf einem dafür vorgesehenen See in Punta Cana einen betreuten Jet-Ski-Parcours. Zur Veranstaltung gehören in der Regel Zeit für die Ausrüstung und eine Einweisung. Die eigentliche Fahrzeit hängt vom Paket ab.\n\n**Dauer**  ca. 4 Stunden\n\n**Gut zu wissen**\n\nFrag nach dem Mindestalter für Fahrende und Mitfahrende, der Möglichkeit, einen Jet-Ski zu teilen, und der Fahrtdauer. Bring Lichtbildausweis, Bade- und Wechselkleidung mit.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$119"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "imgs/edt/tours/jet-ski/1.webp"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/jet-ski/2.webp"
+      }
+    ],
+    "tags": [
+      "water",
+      "adventure",
+      "half-day"
+    ],
+    "destination": "Punta Cana",
+    "duration": "4 Stunden",
+    "profileKey": "jet-ski-circuit"
+  },
+  {
+    "title": "Cap Cana · Juanillo VIP mit dem Katamaran",
+    "description": "Erlebe Cap Cana vom Wasser aus und verbringe Zeit an der Playa Juanillo. Je nach Seegang und Paket kannst du am Riff schnorcheln oder im flachen Wasser baden. Frag nach Verpflegung und Zugang zum Beachclub.\n\n**Dauer**  ca. 6 Stunden\n\n**Gut zu wissen**\n\nKläre den Abfahrtsort und die geplanten Stopps. Bring Badesachen und ein Handtuch mit. Die Crew richtet den Schnorchelstopp nach dem Seegang.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*\n\n**Bildnachweise**\n\n[Mary Mark Ockerbloom](https://commons.wikimedia.org/wiki/File:Beach_near_Santuary_Cap_Cana%2C_Dominican_Republic.jpg) · [CC0](https://creativecommons.org/publicdomain/zero/1.0/)  \n[Mustang Joe](https://commons.wikimedia.org/wiki/File:Lucas_I_Catamaran.jpg) · [CC0](https://creativecommons.org/publicdomain/zero/1.0/)",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$189"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "https://upload.wikimedia.org/wikipedia/commons/7/75/Beach_near_Santuary_Cap_Cana%2C_Dominican_Republic.jpg"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d6/Lucas_I_Catamaran.jpg/3840px-Lucas_I_Catamaran.jpg"
+      }
+    ],
+    "tags": [
+      "water",
+      "vip",
+      "snorkel",
+      "half-day"
+    ],
+    "destination": "Cap Cana",
+    "duration": "6 Stunden",
+    "profileKey": "juanillo-vip"
+  },
+  {
+    "title": "SeaQuarium Punta Cana · Unterwasserspaziergang",
+    "description": "Bei diesem geführten Spaziergang unter Wasser trägt man einen Helm, der von der Oberfläche mit Luft versorgt wird. Zur Bootsfahrt können auch Schnorcheln und ein Stopp im flachen Wasser gehören. Das Programm richtet sich nach Paket und Seegang.\n\n**Dauer**  ca. 4 Stunden\n\n**Gut zu wissen**\n\nFrag nach gesundheitlichen Voraussetzungen, Mindestalter, Schwimmkenntnissen und Möglichkeiten für Gäste, die an Bord bleiben. Bring Badesachen und ein Handtuch mit.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*\n\n**Bildnachweise**\n\n[Mustang Joe](https://commons.wikimedia.org/wiki/File:Lucas_I_Catamaran.jpg) · [CC0](https://creativecommons.org/publicdomain/zero/1.0/)",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$125"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "imgs/edt/tours/seaquarium/1.webp"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d6/Lucas_I_Catamaran.jpg/3840px-Lucas_I_Catamaran.jpg"
+      }
+    ],
+    "tags": [
+      "water",
+      "adventure",
+      "snorkel",
+      "wildlife",
+      "half-day"
+    ],
+    "destination": "Cabeza de Toro",
+    "duration": "4 Stunden",
+    "profileKey": "seaquarium"
+  },
+  {
+    "title": "Macao · Geführte ATV-Quadtour",
+    "description": "Fahre mit dem Quad über unbefestigte Wege in der Umgebung von Macao. Häufig führt die Tour auch zur Playa Macao, zu einer Süßwasserhöhle oder zu einer kleinen Verkostung auf dem Land. Route und Boden hängen vom Wetter ab.\n\n**Dauer**  ca. 4 Stunden\n\n**Gut zu wissen**\n\nFrag nach den Voraussetzungen für Fahrer und Mitfahrende, dem Helm und der Abrechnung pro Quad oder Person. Bring feste Schuhe und unempfindliche Kleidung mit.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*\n\n**Bildnachweise**\n\n[Carolinarondon](https://commons.wikimedia.org/wiki/File:Playa_Macao.jpg) · [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)  \n[RienShin14](https://commons.wikimedia.org/wiki/File:ATV_bike.jpg) · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$65"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Playa_Macao.jpg"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "https://upload.wikimedia.org/wikipedia/commons/5/5b/ATV_bike.jpg"
+      }
+    ],
+    "tags": [
+      "adventure",
+      "offroad",
+      "half-day"
+    ],
+    "destination": "Macao",
+    "duration": "4 Stunden",
+    "profileKey": "macao-atv"
+  },
+  {
+    "title": "Eco Park Punta Cana · Tiere und Landleben",
+    "description": "In diesem Park auf dem Land geben Haus- und gerettete Tiere, ein typisches dominikanisches Haus und eine Zuckerrohrmühle Einblick ins Landleben. Je nach Paket und Bedingungen sind Spaziergänge oder Aktivitäten am Fluss möglich.\n\n**Dauer**  ca. 4 Stunden\n\n**Gut zu wissen**\n\nFrag nach den Begegnungen mit Tieren und den Angeboten am Fluss für deinen Termin. Bring feste Schuhe, Sonnen- und Insektenschutz mit.\n\n*Einige Fotos zeigen das Ziel oder die Aktivität beispielhaft. Ort, Boot und Ausrüstung können abweichen.*",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$90"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "imgs/edt/tours/eco-park/1.webp"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/eco-park/2.webp"
+      }
+    ],
+    "tags": [
+      "nature",
+      "adventure",
+      "wildlife",
+      "half-day"
+    ],
+    "destination": "Punta Cana",
+    "duration": "4 Stunden",
+    "profileKey": "eco-park"
+  },
+  {
+    "title": "Insel Catalina und Altos de Chavón",
+    "description": "Kombiniere einen Rundgang durch die gepflasterten Gassen von Altos de Chavón mit einer Bootsfahrt zur Insel Catalina. Vom Dorf blickst du auf den Río Chavón. Auf Catalina bleibt Zeit für den Strand und bei ruhiger See fürs Schnorcheln. Die Reihenfolge kann sich ändern.\n\n**Dauer**  ca. 10 Stunden\n\n**Gut zu wissen**\n\nFrag nach Ablauf, Schnorchelausrüstung und Transfer. Bring Schuhe zum Laufen, Badesachen und ein Handtuch mit.\n\n**Bildnachweise**\n\n[Dr. Eugen Lehle](https://commons.wikimedia.org/wiki/File:Altos_de_Chav%C3%B3n.jpg) · [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$125"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "https://upload.wikimedia.org/wikipedia/commons/1/10/Altos_de_Chav%C3%B3n.jpg"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/catalina-altos/2.webp"
+      },
+      {
+        "role": "detail_3",
+        "localPath": "imgs/edt/tours/catalina-altos/3.webp"
+      }
+    ],
+    "tags": [
+      "cultural",
+      "water",
+      "island",
+      "snorkel",
+      "full-day"
+    ],
+    "destination": "La Romana",
+    "duration": "10 Stunden",
+    "profileKey": "catalina-altos"
+  },
+  {
+    "title": "Los Haitises und Cayo Levantado",
+    "description": "Überquere die Bucht von Samaná und verbinde eine Bootsfahrt im Nationalpark Los Haitises mit Zeit am Strand von Cayo Levantado, auch Bacardí-Insel genannt. Je nach Route geht es durch Mangrovenkanäle und vorbei an Kalksteininseln und Höhlen mit Felskunst der Taíno.\n\n**Dauer**  ca. 11 Stunden\n\n**Gut zu wissen**\n\nAb Bávaro ist es ein langer Ausflug mit Fahrten über offenes Wasser. Bring Badesachen, ein Handtuch und griffige Schuhe mit. Kläre die Route vorab.\n\n**Bildnachweise**\n\n[Anton Bielousov](https://commons.wikimedia.org/wiki/File:Dominican_Republic_Los_Haitises_birds_island.jpeg) · [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)  \n[Anton Bielousov](https://commons.wikimedia.org/wiki/File:Dominican_republic_Los_Haitises_mangroves.jpeg) · [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$135"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Dominican_Republic_Los_Haitises_birds_island.jpeg/1280px-Dominican_Republic_Los_Haitises_birds_island.jpeg"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "imgs/edt/tours/haitises-cayo/2.webp"
+      },
+      {
+        "role": "detail_3",
+        "localPath": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Dominican_republic_Los_Haitises_mangroves.jpeg/1280px-Dominican_republic_Los_Haitises_mangroves.jpeg"
+      }
+    ],
+    "tags": [
+      "nature",
+      "cultural",
+      "water",
+      "island",
+      "full-day"
+    ],
+    "destination": "Sabana de la Mar",
+    "duration": "11 Stunden",
+    "profileKey": "haitises-cayo"
+  },
+  {
+    "title": "Sacred River bei Nacht · Dinner und Dschungelparty",
+    "description": "Folge bei Fackellicht dem unterirdischen Fluss im Bávaro Adventure Park und besuche nach Einbruch der Dunkelheit die Blue-Lagoon-Cenote. Am Wasserfallbecken gibt es Cocktails. Danach folgen ein Surf-and-Turf-Dinner mit offener Bar und eine Dschungelparty.\n\n**Inklusive**\n• Fluss bei Fackellicht und Blue-Lagoon-Cenote\n• Cocktails, Surf-and-Turf-Dinner, offene Bar und Dschungelparty\n• Gemeinsamer Hoteltransfer im Raum Punta Cana und Bávaro\n\n**Gut zu wissen**\n\nPlane dreieinhalb bis vier Stunden im Park plus Fahrzeit ein. Die Abendtour läuft an ausgewählten Terminen. Kläre die Abholung und melde Lebensmittelallergien vorab. Bring Wasserschuhe, Badesachen, ein Handtuch und trockene Kleidung fürs Abendessen mit. Kinder ab drei Jahren können mit einem Erwachsenen teilnehmen.\n\n*Die Galeriefotos zeigen dieselbe Strecke im Park bei Tageslicht.*\n\n[Tagestour mit dominikanischem Mittagessen ansehen](/details/tours/33-heiliger-fluss)",
+    "pricing": [
+      {
+        "tier": "Personen",
+        "price": "$169"
+      }
+    ],
+    "images": [
+      {
+        "role": "detail_1",
+        "localPath": "https://res.cloudinary.com/dkxlhxpe4/image/upload/v1795464640/tours/tusm4jx5gaucxhxp2yzj.jpg"
+      },
+      {
+        "role": "detail_2",
+        "localPath": "https://res.cloudinary.com/dkxlhxpe4/image/upload/v1795464656/tours/zr2cczlbwbspve6xkquu.jpg"
+      },
+      {
+        "role": "detail_3",
+        "localPath": "https://res.cloudinary.com/dkxlhxpe4/image/upload/v1795464675/tours/tt2czbd1t5mbzcop9qd7.jpg"
+      }
+    ],
+    "tags": [
+      "water",
+      "nature",
+      "adventure",
+      "half-day",
+      "party"
+    ],
+    "destination": "Bávaro",
+    "duration": "4 Stunden",
+    "profileKey": "sacred-river-night"
   }
 ]

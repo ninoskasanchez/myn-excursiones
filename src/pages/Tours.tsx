@@ -16,10 +16,10 @@ const COPY = {
   kicker: { en: 'Excursions', es: 'Excursiones', fr: 'Excursions', de: 'Ausflüge' },
   title: { en: 'Pick your day', es: 'Elige tu día', fr: 'Choisissez votre journée', de: 'Wähle deinen Tag' },
   subtitle: {
-    en: 'Islands, jungle, culture and open sea — every excursion with hotel pickup, certified guides and the price upfront.',
-    es: 'Islas, selva, cultura y mar abierto: cada excursión con recogida en el hotel, guías certificados y el precio claro.',
-    fr: 'Îles, jungle, culture et grand large — chaque excursion avec prise en charge à l’hôtel, guides certifiés et prix affiché.',
-    de: 'Inseln, Dschungel, Kultur und offenes Meer — jeder Ausflug mit Hotelabholung, zertifizierten Guides und Preis vorab.',
+    en: 'Explore islands, jungle, local culture and the open sea. See each excursion for prices and pickup options.',
+    es: 'Explora islas, selva, cultura local y mar abierto. Consulta los precios y la recogida en cada excursión.',
+    fr: 'Explorez les îles, la jungle, la culture locale et le grand large. Consultez les tarifs et les options de prise en charge pour chaque excursion.',
+    de: 'Entdecke Inseln, Dschungel, lokale Kultur und das offene Meer. Preise und Abholoptionen findest du beim jeweiligen Ausflug.',
   },
   destKicker: { en: 'Top destinations', es: 'Destinos top', fr: 'Destinations phares', de: 'Top-Ziele' },
   destTitle: { en: 'Where do you want to go?', es: '¿A dónde quieres ir?', fr: 'Où voulez-vous aller ?', de: 'Wohin soll es gehen?' },
@@ -114,12 +114,17 @@ const Tours: React.FC = () => {
         if (length === 'mid' && !(hours !== null && hours > 4 && hours < 8)) return false;
         if (length === 'long' && !(hours !== null && hours >= 8)) return false;
         const price = tourPrice(entry.tour);
-        if (maxPrice !== null && price !== null && price > maxPrice) return false;
+        if (maxPrice !== null && (price === null || price > maxPrice)) return false;
         return true;
       });
-    const byPrice = (a: (typeof scored)[number], b: (typeof scored)[number]) => (tourPrice(a.entry.tour) ?? 9e9) - (tourPrice(b.entry.tour) ?? 9e9);
-    if (sort === 'cheap') scored.sort(byPrice);
-    else if (sort === 'dear') scored.sort((a, b) => -byPrice(a, b));
+    const byPrice = (a: (typeof scored)[number], b: (typeof scored)[number]) => {
+      const first = tourPrice(a.entry.tour);
+      const second = tourPrice(b.entry.tour);
+      if (first === null) return second === null ? 0 : 1;
+      if (second === null) return -1;
+      return sort === 'dear' ? second - first : first - second;
+    };
+    if (sort === 'cheap' || sort === 'dear') scored.sort(byPrice);
     else if (sort === 'quick') scored.sort((a, b) => (tourHours(a.entry.tour) ?? 99) - (tourHours(b.entry.tour) ?? 99));
     else if (query.trim()) scored.sort((a, b) => b.score - a.score || a.position - b.position);
     return scored.map(({ entry, position }) => ({ tour: entry.tour, rank: position + 1 }));
@@ -300,6 +305,7 @@ const Tours: React.FC = () => {
                 description={tour.description}
                 price={tour.price}
                 pricingOptions={tour.pricingOptions}
+                groupCapacity={tour.groupCapacity}
                 excursionName={tour.title}
                 detailsPath={`/details/tours/${getServiceSlug(tour)}`}
                 destination={tour.destination}

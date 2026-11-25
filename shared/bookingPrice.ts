@@ -205,7 +205,10 @@ export const priceBooking = async (
   // a booking made on WhatsApp. There is no catalogue item to look up: the
   // amount is the guest's own, bounded below, and recorded as client-priced.
   const record = body.category === 'custom' ? null : await findServiceRecord(env, body);
-  const byRate = record ? priceByRate(record, body.quantities) : null;
+  const capacity = Number(record?.groupCapacity);
+  const groupPriced = Number.isInteger(capacity) && capacity > 0;
+  if (groupPriced && persons > capacity) return { ok: false, error: `This group rate covers up to ${capacity} guests.` };
+  const byRate = record && !groupPriced ? priceByRate(record, body.quantities) : null;
   if (byRate && 'error' in byRate) return { ok: false, error: byRate.error };
   if (byRate && byRate.persons > 60) return { ok: false, error: 'That is more people than one booking can take.' };
 
@@ -213,10 +216,15 @@ export const priceBooking = async (
     (Array.isArray(record.pricing) ? record.pricing.map((tier: any) => tier?.price).find((value: any) => value) : null) ??
       record.price
   ) : null;
+  if (groupPriced && !recordUnit) return { ok: false, error: 'No price could be determined for this booking.' };
   const clientTotal = Number(body.amount);
   let unitPrice =
     recordUnit ?? (Number.isFinite(clientTotal) && clientTotal > 0 ? clientTotal / persons : null);
   let total = unitPrice ? Math.round(unitPrice * persons * 100) / 100 : 0;
+  if (groupPriced && recordUnit) {
+    total = recordUnit;
+    unitPrice = recordUnit / persons;
+  }
   if (byRate) {
     persons = byRate.persons;
     total = byRate.total;
@@ -242,7 +250,7 @@ export const priceBooking = async (
       unitPrice,
       total,
       priceSource: recordUnit || byRate ? 'catalogue' : 'client',
-      ...(byRate ? { breakdown: byRate.breakdown } : {}),
+      ...(byRate ? { breakdown: byRate.breakdown } : groupPriced ? { breakdown: `1 private group · ${persons} guests` } : {}),
     },
   };
 };
@@ -273,7 +281,10 @@ const priceCart = async (
     persons += priced.booking.persons;
     if (priced.booking.priceSource !== 'catalogue') allCatalogue = false;
     if (priced.booking.date) dates.push(priced.booking.date);
-    lines.push(`${priced.booking.title} (${priced.booking.persons} × US$${priced.booking.unitPrice.toFixed(2)})`);
+    const linePrice = priced.booking.breakdown
+      ? `${priced.booking.breakdown} · US$${priced.booking.total.toFixed(2)}`
+      : `${priced.booking.persons} × US$${priced.booking.unitPrice.toFixed(2)}`;
+    lines.push(`${priced.booking.title} (${linePrice})`);
   }
   total = Math.round(total * 100) / 100;
   if (total < MIN_TOTAL || total > MAX_TOTAL) {
