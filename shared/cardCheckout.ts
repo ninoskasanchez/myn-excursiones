@@ -350,6 +350,9 @@ export const startCardCheckout = async (
 /** Price a booking and open a PayPal order for it. */
 export const startPayPalCheckout = async (env: PaymentEnv, request: Request, body: BookingRequest): Promise<CardCheckout> => {
   const secrets = await readPaymentSecrets(env);
+  if (secrets.paypalCheckout !== 'api') {
+    return { ok: false, status: 503, error: 'PayPal checkout has changed. Please refresh the page and try again.', code: 'paypal_api_disabled' };
+  }
   if (!isPayPalReady(secrets)) return { ok: false, status: 503, error: UNAVAILABLE, code: 'paypal_not_configured' };
   const priced = await priceBooking(env, body);
   if (!priced.ok) return { ok: false, status: 400, error: priced.error };

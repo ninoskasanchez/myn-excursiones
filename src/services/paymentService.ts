@@ -1,4 +1,7 @@
 import { getAdminPassword } from './authStore';
+import type { PayPalCheckout } from '../../shared/paymentConfig';
+
+export type { PayPalCheckout } from '../../shared/paymentConfig';
 
 /**
  * Talking to the payment endpoints.
@@ -91,9 +94,11 @@ export interface PaymentConfigStatus {
     currency: LocalCurrency;
     secretWordConfigured: boolean;
   };
-  /** PayPal through its Orders API — the guest's payment comes back verified. */
+  /** The active PayPal checkout and the saved details for both options. */
   paypal: {
     ready: boolean;
+    checkout: PayPalCheckout;
+    handle: string;
     mode: GatewayMode;
     clientId: string;
     secretConfigured: boolean;
@@ -137,6 +142,8 @@ export interface PaymentConfigPatch {
   /** Write-only. Empty string clears it. */
   verifoneSecretWord?: string;
   verifoneCurrency?: LocalCurrency;
+  paypalCheckout?: PayPalCheckout;
+  paypalHandle?: string;
   paypalMode?: GatewayMode;
   paypalClientId?: string;
   /** Write-only. Empty string clears it. */
@@ -166,6 +173,8 @@ export interface PaymentsReady {
   wallets: Array<'apple_pay' | 'google_pay'>;
   /** PayPal can be paid through its API, with the answer coming back here. */
   paypal: boolean;
+  /** A public PayPal.Me handle, only when the payment link is selected. */
+  paypalHandle: string;
   /** MIO can be paid through its API Checkout, with the answer coming back here. */
   mio: boolean;
   /** What MIO charges in, and pesos per catalogue dollar when that is DOP. */
@@ -273,6 +282,7 @@ const NOT_READY: PaymentsReady = {
   dopPerUsd: null,
   wallets: [],
   paypal: false,
+  paypalHandle: '',
   mio: false,
   mioCurrency: 'DOP',
   mioDopPerUsd: null,
@@ -296,6 +306,7 @@ export const getPaymentsReady = async (): Promise<PaymentsReady> => {
         ? body.wallets.filter((wallet: unknown): wallet is 'apple_pay' | 'google_pay' => wallet === 'apple_pay' || wallet === 'google_pay')
         : [],
       paypal: body.paypal === true,
+      paypalHandle: typeof body.paypalHandle === 'string' ? body.paypalHandle : '',
       mio: body.mio === true,
       mioCurrency: typeof body.mioCurrency === 'string' && body.mioCurrency ? body.mioCurrency.toUpperCase() : 'DOP',
       mioDopPerUsd: typeof body.mioDopPerUsd === 'number' && body.mioDopPerUsd > 0 ? body.mioDopPerUsd : null,

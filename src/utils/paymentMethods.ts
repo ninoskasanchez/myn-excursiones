@@ -96,8 +96,7 @@ export const isPaymentMethodConfigured = (
     case 'googlepay':
       return Boolean(brandSettings.stripeEnabled) && cardReady && wallets.includes(WALLET_OF[method]!);
     case 'paypal':
-      // Through PayPal's API (configured in the payments admin), or a PayPal.Me link.
-      return paypalReady || hasValue(brandSettings.paypalMeLink);
+      return paypalReady;
     case 'mio':
       // MIO's API Checkout (configured in the payments admin), or a Milin link.
       return mioReady || hasValue(brandSettings.mioLink);

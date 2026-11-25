@@ -28,7 +28,7 @@ const Admin: React.FC = () => {
     brandName: 'Tours',
     contactName: '',
     phoneNumber: '+1 (809) 555-0123',
-    paypalMeLink: 'https://www.paypal.com/paypalme/tours',
+    paypalMeLink: '',
     verifoneLink: '',
     brandicon: '',
   });
@@ -259,13 +259,6 @@ const Admin: React.FC = () => {
                     className="rounded-2xl border border-ink/15 px-4 py-3 font-normal text-ink"
                   />
                 </label>
-                <input
-                  type="text"
-                  value={brandSettings.paypalMeLink}
-                  onChange={(event) => setBrandSettings({ ...brandSettings, paypalMeLink: event.target.value })}
-                  placeholder="Enlace de PayPal"
-                  className="rounded-2xl border border-ink/15 px-4 py-3 md:col-span-2"
-                />
                 <p className="md:col-span-2 rounded-2xl bg-paper-warm/60 px-4 py-3 text-sm text-ink-soft">
                   El fondo de la portada (fotos y videos) se cambia en{' '}
                   <a href="/admin/look" className="font-bold text-lagoon-dark underline">Admin › Aspecto</a>.
@@ -314,7 +307,6 @@ const Admin: React.FC = () => {
                   {brandSettings.namePreference === 'contact' ? 'el de la persona de contacto' : 'el del negocio'}
                 </p>
                 <p><strong>Correo:</strong> {brandSettings.contactEmail || 'el de la página de contacto'}</p>
-                <p><strong>PayPal:</strong> {brandSettings.paypalMeLink}</p>
                 <button onClick={() => setEditingBrand(true)} className="mt-4 rounded-full bg-lagoon-dark px-5 py-2 font-semibold text-white">
                   Editar datos del negocio
                 </button>

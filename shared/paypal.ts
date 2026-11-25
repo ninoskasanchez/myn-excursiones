@@ -15,8 +15,7 @@
  * Apps & Credentials); sandbox ones in test mode. Exchanged for a short-lived
  * token per call: a Worker isolate cannot be relied on to keep one.
  *
- * Without credentials the storefront keeps using the PayPal.Me link from the
- * brand settings, which brings back no answer at all.
+ * The storefront uses this flow when the operator selects the API checkout.
  */
 
 import { paypalApiBase, PaymentEnv, PaymentSecrets } from './paymentConfig';

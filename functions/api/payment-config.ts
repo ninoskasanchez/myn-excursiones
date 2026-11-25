@@ -1,4 +1,5 @@
 import { verifyAdminRequest } from '../../shared/adminAuth';
+import { paypalMeHandle } from '../../shared/paypalMe';
 import {
   describePaymentConfig,
   writePaymentSecrets,
@@ -103,6 +104,17 @@ export async function onRequest(context: { request: Request; env: PaymentEnv }) 
       if (typeof value === 'string') {
         (patch as Record<string, unknown>)[field] = value.trim().slice(0, max);
       }
+    }
+
+    if (body.paypalCheckout === 'link' || body.paypalCheckout === 'api') {
+      patch.paypalCheckout = body.paypalCheckout;
+    }
+    if (typeof body.paypalHandle === 'string') {
+      const handle = paypalMeHandle(body.paypalHandle);
+      if (body.paypalHandle.trim() && !handle) {
+        return json({ error: 'Escribe el usuario de PayPal.Me (hasta 20 letras o números) o pega el enlace de tu perfil.' }, 400);
+      }
+      patch.paypalHandle = handle;
     }
 
     if (typeof body.cardnetMerchantType === 'string' && body.cardnetMerchantType.trim() &&

@@ -20,6 +20,7 @@ import { AttemptLine, startAttempt } from '../../lib/paymentAttempt';
 import { rememberGuest } from '../../lib/guestMemory';
 import { track } from '../../lib/activity';
 import PrePayDetails, { initialPrePay, PrePayState, prePayProblem } from '../payment/PrePayDetails';
+import { paypalMePaymentUrl } from '../../../shared/paypalMe';
 
 /**
  * How a guest pays: by card, by PayPal, or in person through the concierge.
@@ -294,15 +295,6 @@ const extractAmountNumber = (priceStr?: string): number | null => {
   return match ? parseFloat(match[1]) : null;
 };
 
-const buildDynamicPayPalUrl = (baseUrl: string, amount: number | null): string => {
-  const targetBase = (baseUrl && baseUrl.trim()) ? baseUrl.trim() : '';
-  if (!targetBase) return '';
-  if (!amount || amount <= 0) return targetBase;
-
-  const cleanBase = targetBase.replace(/\/+$/, '').replace(/\/\d+(?:\.\d+)?(?:USD)?$/i, '');
-  return `${cleanBase}/${amount}USD`;
-};
-
 const formatMoney = (value: number, currency: string, lang: Lang) => {
   const symbol = currency === 'DOP' ? 'RD$' : currency === 'USD' ? 'US$' : currency;
   const tag = { en: 'en-US', es: 'es-DO', de: 'de-DE', fr: 'fr-FR' }[lang];
@@ -372,11 +364,13 @@ export const PaymentDropdown: React.FC<PaymentDropdownProps> = ({
   // A wallet the payment page offers but this device cannot use is not offered.
   const paypalApi = ready?.paypal ?? false;
   const mioApi = ready?.mio ?? false;
+  const totalUsd = typeof amount === 'number' && amount > 0 ? amount : extractAmountNumber(selectedPrice);
+  const paypalLink = paypalMePaymentUrl(ready?.paypalHandle ?? '', totalUsd);
   const methods = getPaymentMethodStates(
     brandSettings,
     cardReady,
     (ready?.wallets ?? []).filter((id) => deviceWallets.includes(id)),
-    paypalApi,
+    paypalApi || Boolean(paypalLink),
     mioApi
   );
   if (allowedMethods) {
@@ -387,7 +381,6 @@ export const PaymentDropdown: React.FC<PaymentDropdownProps> = ({
   const visibleCount = Object.values(methods).filter((state) => state.visible).length;
   const anyVisible = visibleCount > 0;
   const cardLink = getCardPaymentLink(brandSettings);
-  const totalUsd = typeof amount === 'number' && amount > 0 ? amount : extractAmountNumber(selectedPrice);
   const displayPrice = selectedPrice || (totalUsd ? formatMoney(totalUsd, 'USD', lang) : t.inquire);
 
   /** What the card is charged, when it is charged in pesos and the rate is known. */
@@ -587,9 +580,12 @@ export const PaymentDropdown: React.FC<PaymentDropdownProps> = ({
       }
       return;
     }
-    const targetUrl = buildDynamicPayPalUrl(brandSettings.paypalMeLink, totalUsd);
-    recordAttempt('paypal', targetUrl || undefined);
-    if (targetUrl) window.open(targetUrl, '_blank');
+    if (!paypalLink) {
+      setCardError(t.failed);
+      return;
+    }
+    recordAttempt('paypal', paypalLink);
+    window.open(paypalLink, '_blank', 'noopener');
     // The server tells the operator when it can; otherwise the guest's own
     // WhatsApp does, as it always has.
     if (!flags.operatorAlerts) openWhatsAppConfirmation('PayPal');
@@ -945,7 +941,7 @@ export const PaymentDropdown: React.FC<PaymentDropdownProps> = ({
               <div className="mt-4 rounded-xl border-2 border-mango-light/50 bg-mango/20 p-3 text-xs text-mango-light">{prePayError}</div>
             )}
 
-            {(hosted === 'mio' ? mioApi : paypalApi) && cardError && (
+            {cardError && (
               <div className="mt-4 rounded-xl border-2 border-hibiscus-light/50 bg-hibiscus/20 p-3 text-xs text-paper">{cardError}</div>
             )}
 

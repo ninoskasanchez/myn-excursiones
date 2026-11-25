@@ -31,8 +31,8 @@ export async function onRequest(context: { request: Request; env: PaymentEnv }) 
       dopPerUsd: currency === 'DOP' && secrets.dopPerUsd > 0 ? secrets.dopPerUsd : null,
       // Apple Pay / Google Pay, when the processor's payment page offers them.
       wallets: processor ? CARD_WALLETS[processor] : [],
-      // PayPal through its API (an answer comes back), rather than PayPal.Me.
-      paypal: isPayPalReady(secrets),
+      paypal: secrets.paypalCheckout === 'api' && isPayPalReady(secrets),
+      paypalHandle: secrets.paypalCheckout === 'link' ? secrets.paypalHandle : '',
       // MIO through its API Checkout, rather than a Milin link; and what it charges in.
       mio: isMioReady(secrets),
       mioCurrency: secrets.mioCurrency,

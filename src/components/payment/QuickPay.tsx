@@ -20,6 +20,7 @@ import { submitContactRequest } from '../../services/contactRequestService';
 import { generateWhatsAppMessage } from '../../utils/whatsapp';
 import { startAttempt } from '../../lib/paymentAttempt';
 import { getNotifyFlags } from '../../services/notifyService';
+import { paypalMePaymentUrl } from '../../../shared/paypalMe';
 
 /**
  * Pay an amount, any amount.
@@ -37,11 +38,6 @@ import { getNotifyFlags } from '../../services/notifyService';
 const MIN = 1;
 const MAX = 50_000;
 const QUICK = [50, 100, 200, 500];
-
-const payPalUrl = (base: string, amount: number) => {
-  const clean = base.trim().replace(/\/+$/, '').replace(/\/\d+(?:\.\d+)?(?:USD)?$/i, '');
-  return clean ? `${clean}/${amount}USD` : '';
-};
 
 const QuickPay: React.FC<{ id?: string }> = ({ id = 'pay' }) => {
   const { brandSettings } = useBrand();
@@ -108,7 +104,7 @@ const QuickPay: React.FC<{ id?: string }> = ({ id = 'pay' }) => {
   };
 
   const cardReady = Boolean(ready?.card);
-  const methods = getPaymentMethodStates(brandSettings, cardReady, [], Boolean(ready?.paypal), Boolean(ready?.mio));
+  const methods = getPaymentMethodStates(brandSettings, cardReady, [], Boolean(ready?.paypal || ready?.paypalHandle), Boolean(ready?.mio));
   const cardLink = getCardPaymentLink(brandSettings);
   const value = Number(String(amount).replace(',', '.'));
   const valid = Number.isFinite(value) && value >= MIN && value <= MAX;
@@ -201,7 +197,7 @@ const QuickPay: React.FC<{ id?: string }> = ({ id = 'pay' }) => {
       }
       return;
     }
-    const url = payPalUrl(brandSettings.paypalMeLink ?? '', value);
+    const url = paypalMePaymentUrl(ready?.paypalHandle ?? '', value);
     if (url) {
       attempt('paypal', url);
       window.open(url, '_blank', 'noopener');
@@ -329,7 +325,7 @@ const QuickPay: React.FC<{ id?: string }> = ({ id = 'pay' }) => {
                 </button>
               )}
               {methods.paypal.visible && (
-                <button type="button" onClick={payByPayPal} className="tropical-button-outline w-full gap-2 sm:w-auto">
+                <button type="button" onClick={payByPayPal} disabled={busy} className="tropical-button-outline w-full gap-2 disabled:opacity-60 sm:w-auto">
                   <FaPaypal /> {t.paypal}
                 </button>
               )}

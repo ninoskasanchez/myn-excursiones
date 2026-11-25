@@ -34,6 +34,8 @@
  * never needs one.
  */
 
+import { paypalMeHandle } from './paypalMe';
+
 export const PAYMENT_SECRETS_KEY = 'payment-secrets';
 
 /**
@@ -71,6 +73,7 @@ export const isProtectedResource = (key: string): boolean =>
   PROTECTED_RESOURCES.has(key) || PROTECTED_PREFIXES.some((prefix) => key.startsWith(prefix));
 
 export type GatewayMode = 'test' | 'live';
+export type PayPalCheckout = 'link' | 'api';
 /**
  * Which processor charges a card. The GUEST never sees this — the storefront
  * offers one "pay by card" option and the server picks the processor — so it
@@ -135,14 +138,9 @@ export interface PaymentSecrets {
   verifoneSecretWord: string;
   verifoneCurrency: LocalCurrency;
 
-  /**
-   * PAYPAL, through its Orders API (Checkout): the server opens an order for
-   * the exact amount, PayPal sends the guest back here with it approved, and
-   * the server captures it — so the site knows the outcome rather than asking
-   * the guest. Without these the storefront falls back to the PayPal.Me link
-   * in the brand settings. Always charged in US dollars: PayPal does not take
-   * Dominican pesos.
-   */
+  /** The checkout guests use. Test/live applies only to the Orders API. */
+  paypalCheckout: PayPalCheckout;
+  paypalHandle: string;
   paypalMode: GatewayMode;
   /** REST app Client ID (developer.paypal.com → Apps & Credentials). */
   paypalClientId: string;
@@ -215,6 +213,8 @@ export interface PaymentConfigStatus {
   };
   paypal: {
     ready: boolean;
+    checkout: PayPalCheckout;
+    handle: string;
     mode: GatewayMode;
     clientId: string;
     secretConfigured: boolean;
@@ -255,6 +255,8 @@ const DEFAULTS: PaymentSecrets = {
   verifoneMerchantCode: '',
   verifoneSecretWord: '',
   verifoneCurrency: 'USD',
+  paypalCheckout: 'link',
+  paypalHandle: '',
   paypalMode: 'test',
   paypalClientId: '',
   paypalSecret: '',
@@ -418,6 +420,8 @@ const normalize = (input: unknown): PaymentSecrets => {
     verifoneSecretWord: text(source.verifoneSecretWord, 400),
     verifoneCurrency: currency(source.verifoneCurrency, DEFAULTS.verifoneCurrency),
 
+    paypalCheckout: source.paypalCheckout === 'api' ? 'api' : DEFAULTS.paypalCheckout,
+    paypalHandle: paypalMeHandle(source.paypalHandle),
     paypalMode: mode(source.paypalMode),
     paypalClientId: text(source.paypalClientId, 200).replace(/\s+/g, ''),
     paypalSecret: text(source.paypalSecret, 200).replace(/\s+/g, ''),
@@ -627,6 +631,8 @@ export const describePaymentConfig = async (env: PaymentEnv): Promise<PaymentCon
     },
     paypal: {
       ready: isPayPalReady(secrets),
+      checkout: secrets.paypalCheckout,
+      handle: secrets.paypalHandle,
       mode: secrets.paypalMode,
       clientId: secrets.paypalClientId,
       secretConfigured: secrets.paypalSecret.length > 0,

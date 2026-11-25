@@ -9,6 +9,7 @@ import {
   savePaymentConfig,
   PaymentConfigStatus,
   PaymentConfigPatch,
+  PayPalCheckout,
   GatewayMode,
   LocalCurrency,
   CardProcessor,
@@ -42,7 +43,7 @@ const METHOD_LABELS: Record<PaymentMethodId, { name: string; requirement: string
   },
   paypal: {
     name: 'PayPal',
-    requirement: 'Necesita la app de PayPal (abajo) o un enlace de PayPal.Me',
+    requirement: 'Configura abajo la opción de PayPal que quieras mostrar',
   },
   mio: {
     name: 'MIO',
@@ -163,7 +164,7 @@ const PaymentSettingsPanel: React.FC<PaymentSettingsPanelProps> = ({ brandSettin
     brandSettings,
     Boolean(status?.activeCardProcessor),
     WALLETS_BY_PROCESSOR[String(status?.activeCardProcessor ?? '')] ?? [],
-    Boolean(status?.paypal?.ready),
+    status?.paypal?.checkout === 'api' ? status.paypal.ready : Boolean(status?.paypal?.handle),
     Boolean(status?.mio?.ready)
   );
 
@@ -271,25 +272,35 @@ const PaymentSettingsPanel: React.FC<PaymentSettingsPanelProps> = ({ brandSettin
       return clearSecret ? 'Palabra secreta de Verifone eliminada.' : 'Datos de Verifone guardados.';
     });
 
-  // ── PayPal (Orders API) ───────────────────────────────────────────────
+  // ── PayPal ────────────────────────────────────────────────────────────
+  const [paypalCheckout, setPaypalCheckout] = useState<PayPalCheckout>('link');
+  const [paypalHandle, setPaypalHandle] = useState('');
   const [paypalClientId, setPaypalClientId] = useState('');
   const [paypalSecret, setPaypalSecret] = useState('');
   const [paypalMode, setPaypalMode] = useState<GatewayMode>('test');
   const [paypalMessage, setPaypalMessage] = useState<Notice>(null);
   useEffect(() => {
     if (!status?.paypal) return;
+    setPaypalCheckout(status.paypal.checkout ?? 'link');
+    setPaypalHandle(status.paypal.handle ?? '');
     setPaypalClientId(status.paypal.clientId);
     setPaypalMode(status.paypal.mode);
-  }, [status?.paypal?.clientId, status?.paypal?.mode]);
+  }, [status?.paypal?.checkout, status?.paypal?.handle, status?.paypal?.clientId, status?.paypal?.mode]);
 
   const handleSavePayPal = (clearSecret = false) =>
     run(setPaypalMessage, async () => {
-      const patch: PaymentConfigPatch = { paypalClientId: paypalClientId.trim(), paypalMode };
-      // Write-only, like the Stripe key: only sent when something was typed.
-      if (clearSecret) patch.paypalSecret = '';
-      else if (paypalSecret.trim()) patch.paypalSecret = paypalSecret.trim();
+      const patch: PaymentConfigPatch = { paypalCheckout };
+      if (paypalCheckout === 'link') {
+        patch.paypalHandle = paypalHandle;
+      } else {
+        patch.paypalClientId = paypalClientId.trim();
+        patch.paypalMode = paypalMode;
+        if (clearSecret) patch.paypalSecret = '';
+        else if (paypalSecret.trim()) patch.paypalSecret = paypalSecret.trim();
+      }
       const next = await savePaymentConfig(patch);
       setStatus(next);
+      if (paypalCheckout === 'link') setPaypalHandle(next.paypal.handle);
       setPaypalSecret('');
       return clearSecret ? 'Secret de PayPal eliminado.' : 'Datos de PayPal guardados.';
     });
@@ -814,65 +825,123 @@ const PaymentSettingsPanel: React.FC<PaymentSettingsPanelProps> = ({ brandSettin
         </div>
       </div>
 
-      {/* ── PayPal (Orders API) ────────────────────────────────────────── */}
+      {/* ── PayPal ─────────────────────────────────────────────────────── */}
       <div className="mt-5 rounded-3xl border border-ink/10 bg-paper-warm/40 p-5">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h4 className="flex items-center gap-2 font-semibold text-ink">
-              <FaPaypal className="text-sky-dark" /> PayPal · cobro con respuesta
+              <FaPaypal className="text-sky-dark" /> PayPal
             </h4>
             <p className="max-w-2xl text-xs text-ink-soft">
-              Con una app de PayPal, cada reserva abre un pedido de PayPal por el importe exacto; PayPal devuelve
-              al visitante a este sitio y el cobro se confirma aquí mismo — pagado, rechazado o cancelado — sin
-              tener que preguntarle si funcionó. Sin la app se sigue usando el enlace de PayPal.Me, que no
-              devuelve ninguna respuesta. PayPal cobra siempre en dólares.
+              Elige cómo pagan los visitantes con PayPal. Guarda los cambios para activar la opción elegida.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <HelpButton onClick={() => setHelp('paypal')} />
-            <ReadyChip ready={Boolean(status?.paypal?.ready)} mode={status?.paypal?.mode} />
-            <ModeSwitch value={paypalMode} onChange={setPaypalMode} />
+            {paypalCheckout === 'api' && <HelpButton onClick={() => setHelp('paypal')} />}
+            <ReadyChip
+              ready={status?.paypal?.checkout === 'api' ? status.paypal.ready : Boolean(status?.paypal?.handle)}
+              mode={status?.paypal?.checkout === 'api' ? status.paypal.mode : undefined}
+            />
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <label data-help="paypal.clientId" className={label}>
-            <span className={labelText}>Client ID</span>
-            <input className={field} value={paypalClientId} onChange={(e) => setPaypalClientId(e.target.value)} placeholder="AX…" autoComplete="off" />
-          </label>
-          <label data-help="paypal.secret" className={label}>
-            <span className={labelText}>Secret {status?.paypal?.secretConfigured && '(guardado)'}</span>
-            <input
-              type="password"
-              className={field}
-              value={paypalSecret}
-              onChange={(e) => setPaypalSecret(e.target.value)}
-              placeholder={status?.paypal?.secretConfigured ? 'Dejar vacío para conservar' : 'Secret de la app'}
-              autoComplete="off"
-            />
-          </label>
-        </div>
+        <label className={`mb-4 block max-w-sm ${label}`}>
+          <span className={labelText}>Forma de cobro PayPal</span>
+          <select
+            className={field}
+            value={paypalCheckout}
+            onChange={(event) => setPaypalCheckout(event.target.value === 'api' ? 'api' : 'link')}
+          >
+            <option value="link">Enlace dinámico · PayPal.Me</option>
+            <option value="api">Integración API · verificación automática</option>
+          </select>
+        </label>
 
-        <p className="mt-3 flex items-start gap-2 text-xs text-ink-light">
-          <FaLock className="mt-0.5 shrink-0" />
-          <span>
-            En <em>developer.paypal.com → Apps &amp; Credentials</em> crea una app (en <em>Sandbox</em> para pruebas,
-            en <em>Live</em> para cobrar) y copia su Client ID y su Secret. El Secret se queda en el servidor. La
-            cuenta de PayPal debe ser de empresa (Business).
-          </span>
-        </p>
+        {paypalCheckout === 'link' ? (
+          <>
+            <label className={`block max-w-lg ${label}`}>
+              <span className={labelText}>Usuario de PayPal.Me</span>
+              <input
+                className={`${field} placeholder:text-ink-light/70`}
+                value={paypalHandle}
+                onChange={(event) => setPaypalHandle(event.target.value)}
+                placeholder="Ej. TuNegocio123"
+                autoComplete="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                aria-describedby="paypal-me-description"
+              />
+            </label>
+            <p id="paypal-me-description" className="mt-2 max-w-2xl text-xs text-ink-soft">
+              Escribe tu usuario o pega el enlace de tu perfil de PayPal.Me. El total de la reserva se añade en
+              dólares. Al volver, el visitante indica cómo le fue y tú compruebas el abono en PayPal.
+            </p>
+            <details className="mt-3 max-w-2xl rounded-2xl border border-ink/10 bg-paper p-4 text-sm text-ink-soft">
+              <summary className="cursor-pointer font-semibold text-lagoon-dark">¿Dónde encuentro mi usuario?</summary>
+              <ol className="mt-3 list-decimal space-y-2 pl-5">
+                <li>Inicia sesión en PayPal con la cuenta que debe recibir los cobros.</li>
+                <li>En la configuración de tu cuenta, abre <strong>Perfil → PayPal.Me</strong> y copia tu enlace. Si todavía no tienes uno, pulsa <strong>Crear enlace</strong> en PayPal.Me.</li>
+                <li>Pega el enlace arriba o escribe la parte que sigue a <code>paypal.me/</code>. Pulsa <strong>Guardar PayPal</strong>.</li>
+              </ol>
+              <img
+                src="/images/paypal-me-handle.png"
+                alt="Ejemplo ilustrado de Configuración de la cuenta, Perfil y PayPal.Me. En paypal.me/TuNegocio123 se resalta TuNegocio123, la parte que debes copiar."
+                className="mt-3 w-full rounded-xl border border-ink/10"
+                width={760}
+                height={316}
+                loading="lazy"
+              />
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+                <a className="font-semibold text-lagoon-dark underline" href="https://www.paypal.com/paypalme/" target="_blank" rel="noreferrer">Abrir PayPal.Me</a>
+                <a className="font-semibold text-lagoon-dark underline" href="https://www.paypal.com/us/cshelp/article/preguntas-frecuentes-sobre-paypalme-help432?locale.x=es_US" target="_blank" rel="noreferrer">Tutorial oficial de PayPal</a>
+              </div>
+            </details>
+          </>
+        ) : (
+          <>
+            <div className="mb-3 flex flex-wrap items-center gap-3">
+              <span className={labelText}>Entorno de la API</span>
+              <ModeSwitch value={paypalMode} onChange={setPaypalMode} />
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <label data-help="paypal.clientId" className={label}>
+                <span className={labelText}>Client ID</span>
+                <input className={field} value={paypalClientId} onChange={(e) => setPaypalClientId(e.target.value)} placeholder="AX…" autoComplete="off" />
+              </label>
+              <label data-help="paypal.secret" className={label}>
+                <span className={labelText}>Secret {status?.paypal?.secretConfigured && '(guardado)'}</span>
+                <input
+                  type="password"
+                  className={field}
+                  value={paypalSecret}
+                  onChange={(e) => setPaypalSecret(e.target.value)}
+                  placeholder={status?.paypal?.secretConfigured ? 'Dejar vacío para conservar' : 'Secret de la app'}
+                  autoComplete="off"
+                />
+              </label>
+            </div>
+            <p className="mt-3 flex items-start gap-2 text-xs text-ink-light">
+              <FaLock className="mt-0.5 shrink-0" />
+              <span>
+                PayPal devuelve al visitante al sitio y el pago se verifica automáticamente.
+                Para conectar tu cuenta Business, copia el Client ID y el Secret desde <em>Apps &amp; Credentials</em>
+                en el entorno correspondiente (<em>Sandbox</em> o <em>Live</em>). El Secret se guarda en el servidor.
+              </span>
+            </p>
+          </>
+        )}
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <button data-help="paypal.save"
             onClick={() => handleSavePayPal()}
-            disabled={saving}
+            disabled={saving || !status}
             className="rounded-full bg-lagoon-dark px-5 py-2 text-sm font-semibold text-white disabled:opacity-50"
           >
             {saving ? 'Guardando…' : 'Guardar PayPal'}
           </button>
-          {status?.paypal?.secretConfigured && (
+          {paypalCheckout === 'api' && status?.paypal?.secretConfigured && (
             <button
-              onClick={() => window.confirm('¿Borrar el Secret? PayPal volverá al enlace de PayPal.Me hasta que guardes otro.') && handleSavePayPal(true)}
+              onClick={() => window.confirm('¿Borrar el Secret? La integración API necesitará otro Secret para poder recibir pagos.') && handleSavePayPal(true)}
               disabled={saving}
               className="rounded-full border border-sunset-dark/40 px-5 py-2 text-sm font-semibold text-sunset-dark disabled:opacity-50"
             >

@@ -6,8 +6,7 @@ import { startPayPalCheckout } from '../../shared/cardCheckout';
  * Pay with PayPal through PayPal's API: the booking is priced here, a PayPal
  * order is opened for it, and the guest is sent to approve it. PayPal brings
  * them back to /api/pay-return/paypal/…, where the payment is captured.
- * See shared/paypal.ts. Answers 503 when no PayPal app is configured — the
- * storefront then uses the PayPal.Me link instead.
+ * See shared/paypal.ts. Answers 503 when API checkout is inactive or unconfigured.
  */
 
 const json = (body: unknown, status = 200) =>
