@@ -379,7 +379,7 @@ const mode = (value: unknown): GatewayMode => (value === 'live' ? 'live' : 'test
 const currency = (value: unknown, fallback: LocalCurrency): LocalCurrency =>
   value === 'USD' || value === 'DOP' ? value : fallback;
 
-const normalize = (input: unknown): PaymentSecrets => {
+const normalize = (input: unknown, env: PaymentEnv): PaymentSecrets => {
   const source = (input ?? {}) as Partial<Record<keyof PaymentSecrets, unknown>>;
   const stripeCurrency =
     typeof source.stripeCurrency === 'string' && /^[a-zA-Z]{3}$/.test(source.stripeCurrency.trim())
@@ -421,7 +421,8 @@ const normalize = (input: unknown): PaymentSecrets => {
     verifoneCurrency: currency(source.verifoneCurrency, DEFAULTS.verifoneCurrency),
 
     paypalCheckout: source.paypalCheckout === 'api' ? 'api' : DEFAULTS.paypalCheckout,
-    paypalHandle: paypalMeHandle(source.paypalHandle),
+    // Scope the default to this site. A saved handle, including an empty one, takes precedence.
+    paypalHandle: paypalMeHandle(source.paypalHandle ?? (env.SITE_URL === 'https://myn-excursiones.com' ? 'mynexcursiones' : '')),
     paypalMode: mode(source.paypalMode),
     paypalClientId: text(source.paypalClientId, 200).replace(/\s+/g, ''),
     paypalSecret: text(source.paypalSecret, 200).replace(/\s+/g, ''),
@@ -442,7 +443,7 @@ export const readPaymentSecrets = async (env: PaymentEnv): Promise<PaymentSecret
 
   if (kv) {
     try {
-      stored = normalize(await kv.get(PAYMENT_SECRETS_KEY, { type: 'json' }));
+      stored = normalize(await kv.get(PAYMENT_SECRETS_KEY, { type: 'json' }), env);
     } catch (error) {
       console.warn('[paymentConfig] KV read failed:', error);
     }
@@ -491,8 +492,8 @@ export const writePaymentSecrets = async (
   }
 
   try {
-    const current = normalize(await kv.get(PAYMENT_SECRETS_KEY, { type: 'json' }));
-    const next = normalize({ ...current, ...patch });
+    const current = normalize(await kv.get(PAYMENT_SECRETS_KEY, { type: 'json' }), env);
+    const next = normalize({ ...current, ...patch }, env);
     await kv.put(PAYMENT_SECRETS_KEY, JSON.stringify(next));
     return { ok: true };
   } catch (error: any) {
