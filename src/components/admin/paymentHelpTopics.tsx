@@ -323,68 +323,35 @@ export const PAYMENT_HELP: Record<HelpTopicId, HelpTopic> = {
   },
 
   mio: {
-    title: 'MIO',
-    intro: (
-      <>
-        <p>
-          1. Necesitas una cuenta de comercio en MIO. Las credenciales de la <strong>«API Checkout»</strong> no se
-          ven en la app: te las entrega tu asesor de negocios de MIO cuando la activas.
-        </p>
-        <p>
-          2. Pídele a tu asesor: <em>client ID, client secret, número de comercio y la dirección del token</em>, para
-          pruebas y para producción.
-        </p>
-        <p>
-          3. Si solo tienes un link de pago Milin, pégalo abajo en «Link de pago MIO (Milin)»; funciona sin estas
-          credenciales, pero no confirma el pago automáticamente.
-        </p>
-      </>
-    ),
-    introLinks: [
-      { label: 'MIO · comercios', url: 'https://www.mio.com.do' },
-      BCRD_RATE,
-    ],
+    title: 'MIO Negocios · Botón de Pago v5',
+    intro: <p>Pide a tu asesor que habilite Botón de Pago (UrlPayment) y te confirme las llaves y la moneda de cada ambiente.</p>,
+    introLinks: [{ label: 'MIO Negocios', url: 'https://mionegocios.com.do' }, BCRD_RATE],
     steps: [
       {
-        target: 'mio.clientId',
-        title: 'Client ID',
-        body: <p>El identificador de la aplicación que te dio MIO al activar la API Checkout.</p>,
+        target: 'mio.apiKey',
+        title: 'X-API-KEY',
+        body: <p>Usa la llave privada del ambiente que elegiste. Pruebas y Producción tienen llaves distintas.</p>,
       },
       {
-        target: 'mio.secret',
-        title: 'Client secret',
-        body: <p>La clave que acompaña al client ID. Se guarda solo en el servidor y no se vuelve a mostrar.</p>,
-      },
-      {
-        target: 'mio.merchantId',
-        title: 'Número de comercio',
-        body: <p>El número de tu comercio en MIO (merchant ID), también del correo de tu asesor.</p>,
+        target: 'mio.globalKey',
+        title: 'Global-KEY',
+        body: <p>Guarda la misma clave que configuraste para el webhook de pagos en «Mi cuenta» de MIO.</p>,
       },
       {
         target: 'mio.currency',
         title: 'Moneda del cobro',
-        body: <p>Normalmente pesos (DOP). En pesos hace falta la «Tasa de cambio e ITBIS» de más arriba.</p>,
+        body: <p>Selecciona la moneda que MIO confirmó para esa llave. Para DOP, guarda también la tasa de cambio.</p>,
         link: BCRD_RATE,
       },
       {
-        target: 'mio.authUrl',
-        title: 'Dirección del token',
-        body: <p>La URL de autenticación que te indicó MIO, empieza por <code>https://</code> y suele terminar en <code>/oauth/token</code>.</p>,
-      },
-      {
-        target: 'mio.apiBase',
-        title: 'Dirección de la API (opcional)',
-        body: <p>Déjala vacía salvo que MIO te dé una distinta: se usa la de pruebas o la de producción según el modo.</p>,
+        target: 'mio.portal',
+        title: 'URLs en el portal de MIO',
+        body: <p>Registra el webhook de pagos y las direcciones de regreso para Aprobada y Rechazada con el marcador de token.</p>,
       },
       {
         target: 'mio.save',
-        title: 'Guardar',
-        body: (
-          <p>
-            Pulsa «Guardar MIO». Cuando esté <strong>lista</strong>, puedes además elegir MIO como procesador de
-            tarjetas arriba, en «Procesador de tarjetas».
-          </p>
-        ),
+        title: 'Guardar y probar',
+        body: <p>Guarda las credenciales de Pruebas y abre un pago de prueba con las tarjetas del manual. Al guardar Producción con su propia configuración, MIO queda disponible para los visitantes.</p>,
       },
     ],
   },

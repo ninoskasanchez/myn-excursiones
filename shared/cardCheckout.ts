@@ -23,6 +23,9 @@ import {
   isVerifoneReady,
   isPayPalReady,
   isMioReady,
+  isMioV5Configured,
+  mioV5Settings,
+  GatewayMode,
   kvOf,
   stripeApiBase,
   PaymentEnv,
@@ -42,7 +45,7 @@ import {
   OrderProvider,
 } from './bankGateways';
 import { createPayPalOrder } from './paypal';
-import { createMioLink } from './mio';
+import { createMioV5Link, mioEmail, settleMioV5 } from './mioV5';
 
 export type CardCheckout =
   | { ok: true; kind: 'redirect'; url: string; ref: string; processor: CardProcessor | 'paypal' | 'mio' }
@@ -174,7 +177,7 @@ const newOrder = (provider: OrderProvider, booking: PricedBooking, secrets: Paym
       : provider === 'cardnet'
       ? secrets.cardnetCurrency
       : provider === 'mio'
-      ? secrets.mioCurrency
+      ? secrets.mioV5LiveCurrency || 'DOP'
       : secrets.verifoneCurrency;
   return { ...base, currency, ...toLocalAmount(booking.total, currency, secrets) };
 };
@@ -271,23 +274,42 @@ export const startMio = async (
   env: PaymentEnv,
   secrets: PaymentSecrets,
   booking: PricedBooking,
-  origin: string
+  clientIp: string,
+  emailValue: unknown,
+  mode: GatewayMode = 'live',
+  card = false
 ): Promise<CardCheckout> => {
-  if (!isMioReady(secrets)) return { ok: false, status: 503, error: UNAVAILABLE, code: 'mio_not_configured' };
-  const order = newOrder('mio', booking, secrets);
-  const created = await createMioLink(secrets, order, origin);
-  if (!created.ok) return { ok: false, status: 502, error: FAILED };
-  if (!(await saveOrder(env, order))) return { ok: false, status: 503, error: FAILED };
+  if (!(mode === 'live' ? isMioReady(secrets) : isMioV5Configured(secrets, 'test')) || !kvOf(env)) {
+    return { ok: false, status: 503, error: UNAVAILABLE, code: 'mio_not_configured' };
+  }
+  const email = mioEmail(emailValue);
+  if (!email) return { ok: false, status: 400, error: 'Enter a valid email address to pay through MIO.', code: 'mio_email_required' };
+  if (!/^[0-9a-f:.]{3,50}$/i.test(clientIp)) {
+    return { ok: false, status: 400, error: 'MIO could not identify your connection. Please reload and try again.', code: 'mio_client_ip_required' };
+  }
+  const currency = mioV5Settings(secrets, mode).currency;
+  if (!currency) return { ok: false, status: 503, error: UNAVAILABLE };
+  const order: PaymentOrder = {
+    ...newOrder('mio', booking, secrets),
+    ...toLocalAmount(booking.total, currency, secrets),
+    currency,
+    mioV5: { mode, card },
+  };
+  const created = await createMioV5Link(env, secrets, order, clientIp, email);
+  if (!created) return { ok: false, status: 502, error: FAILED, code: 'mio_link_failed' };
   return { ok: true, kind: 'redirect', url: created.url, ref: order.id, processor: 'mio' };
 };
 
-/** Price a booking and open a MIO payment link for it. */
-export const startMioCheckout = async (env: PaymentEnv, request: Request, body: BookingRequest): Promise<CardCheckout> => {
+export const startMioCheckout = async (
+  env: PaymentEnv, request: Request, body: BookingRequest, mode: GatewayMode = 'live'
+): Promise<CardCheckout> => {
   const secrets = await readPaymentSecrets(env);
-  if (!isMioReady(secrets)) return { ok: false, status: 503, error: UNAVAILABLE, code: 'mio_not_configured' };
+  if (!(mode === 'live' ? isMioReady(secrets) : isMioV5Configured(secrets, 'test'))) {
+    return { ok: false, status: 503, error: UNAVAILABLE, code: 'mio_not_configured' };
+  }
   const priced = await priceBooking(env, body);
   if (!priced.ok) return { ok: false, status: 400, error: priced.error };
-  return startMio(env, secrets, priced.booking, new URL(request.url).origin);
+  return startMio(env, secrets, priced.booking, request.headers.get('CF-Connecting-IP') ?? '', body.email, mode);
 };
 
 /** Start an already-priced booking with one card processor. */
@@ -298,12 +320,13 @@ export const startWithProcessor = (
   booking: PricedBooking,
   origin: string,
   clientIp: string,
-  wallet?: string
+  wallet?: string,
+  email?: string
 ): Promise<CardCheckout> => {
   if (processor === 'azul') return startAzul(env, secrets, booking, origin);
   if (processor === 'verifone') return startVerifone(env, secrets, booking, origin);
   if (processor === 'cardnet') return startCardnet(env, secrets, booking, origin, clientIp);
-  if (processor === 'mio') return startMio(env, secrets, booking, origin);
+  if (processor === 'mio') return startMio(env, secrets, booking, clientIp, email, 'live', true);
   return startStripe(env, secrets, booking, origin, wallet);
 };
 
@@ -343,7 +366,8 @@ export const startCardCheckout = async (
     priced.booking,
     origin,
     request.headers.get('CF-Connecting-IP') ?? '',
-    wallet
+    wallet,
+    body.email
   );
 };
 
@@ -369,7 +393,20 @@ export const retryOrder = async (env: PaymentEnv, request: Request, previous: Pa
   const secrets = await readPaymentSecrets(env);
   const origin = new URL(request.url).origin;
   if (previous.provider === 'paypal') return startPayPal(env, secrets, previous.booking, origin);
-  if (previous.provider === 'mio') return startMio(env, secrets, previous.booking, origin);
+  if (previous.provider === 'mio') {
+    if (!previous.mioV5 || previous.mioV5.mode !== 'live' || previous.status !== 'declined') {
+      return { ok: false, status: 409, error: 'This MIO payment cannot be retried here.', code: 'mio_retry_unavailable' };
+    }
+    const result = await settleMioV5(env, secrets, previous);
+    if (result !== 'settled' || previous.status !== 'declined') {
+      return { ok: false, status: 409, error: 'Check the outcome of the original MIO payment before trying again.', code: 'mio_verify_first' };
+    }
+    // Reopen the original hosted payment so a second link cannot charge the same reservation.
+    if (previous.approveUrl && isMioReady(secrets)) {
+      return { ok: true, kind: 'redirect', url: previous.approveUrl, ref: previous.id, processor: 'mio' };
+    }
+    return { ok: false, status: 503, error: UNAVAILABLE };
+  }
   const processor = resolveCardProcessor(secrets);
   if (!processor) return { ok: false, status: 503, error: UNAVAILABLE, code: 'card_not_configured' };
   return startWithProcessor(

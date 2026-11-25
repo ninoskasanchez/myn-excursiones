@@ -19,6 +19,7 @@ export const MAX_TOTAL = 50_000;
 
 export interface BookingRequest {
   category?: string;
+  email?: string;
   serviceId?: number | string;
   title?: string;
   persons?: number;

@@ -27,16 +27,17 @@ export async function onRequest(context: { request: Request; env: PaymentEnv }) 
   return new Response(
     JSON.stringify({
       card: processor !== null,
+      cardRequiresEmail: processor === 'mio',
       currency,
       dopPerUsd: currency === 'DOP' && secrets.dopPerUsd > 0 ? secrets.dopPerUsd : null,
       // Apple Pay / Google Pay, when the processor's payment page offers them.
       wallets: processor ? CARD_WALLETS[processor] : [],
       paypal: secrets.paypalCheckout === 'api' && isPayPalReady(secrets),
       paypalHandle: secrets.paypalCheckout === 'link' ? secrets.paypalHandle : '',
-      // MIO through its API Checkout, rather than a Milin link; and what it charges in.
+      // Only MIO production checkout is advertised to the storefront.
       mio: isMioReady(secrets),
-      mioCurrency: secrets.mioCurrency,
-      mioDopPerUsd: secrets.mioCurrency === 'DOP' && secrets.dopPerUsd > 0 ? secrets.dopPerUsd : null,
+      mioCurrency: secrets.mioV5LiveCurrency || 'DOP',
+      mioDopPerUsd: secrets.mioV5LiveCurrency === 'DOP' && secrets.dopPerUsd > 0 ? secrets.dopPerUsd : null,
     }),
     {
       status: 200,

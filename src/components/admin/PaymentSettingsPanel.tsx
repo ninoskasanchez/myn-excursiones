@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { FaCreditCard, FaCheck, FaLock, FaUniversity, FaFlask, FaLink, FaPaypal, FaUndo } from 'react-icons/fa';
 import { BrandSettings, saveBrandSettings } from '../../services/brandService';
 import WalletSettingsPanel from './WalletSettingsPanel';
+import { validPaymentEmail } from '../payment/PrePayDetails';
 import PaymentHelpTour, { HelpButton } from './PaymentHelpTour';
 import { PAYMENT_HELP, HelpTopicId } from './paymentHelpTopics';
 import {
   getPaymentConfigStatus,
   savePaymentConfig,
+  startMioSandbox,
   PaymentConfigStatus,
   PaymentConfigPatch,
   PayPalCheckout,
@@ -47,7 +49,7 @@ const METHOD_LABELS: Record<PaymentMethodId, { name: string; requirement: string
   },
   mio: {
     name: 'MIO',
-    requirement: 'Necesita las credenciales de API Checkout de MIO (abajo) o un link de pago Milin',
+    requirement: 'Necesita el Botón de Pago de MIO configurado en Producción',
   },
   cash: {
     name: 'Concierge / efectivo por WhatsApp',
@@ -60,7 +62,7 @@ const PROCESSOR_NAMES: Record<CardProcessor, string> = {
   azul: 'AZUL · Banco Popular',
   cardnet: 'CardNET',
   verifone: 'Verifone · 2Checkout',
-  mio: 'MIO · API Checkout',
+  mio: 'MIO · Botón de Pago v5',
 };
 
 /** CardNET publishes these for its certification lab. They only work in test mode. */
@@ -305,44 +307,45 @@ const PaymentSettingsPanel: React.FC<PaymentSettingsPanelProps> = ({ brandSettin
       return clearSecret ? 'Secret de PayPal eliminado.' : 'Datos de PayPal guardados.';
     });
 
-  // ── MIO (API Checkout) ────────────────────────────────────────────────
-  const [mioClientId, setMioClientId] = useState('');
-  const [mioClientSecret, setMioClientSecret] = useState('');
-  const [mioMerchantId, setMioMerchantId] = useState('');
-  const [mioAuthUrl, setMioAuthUrl] = useState('');
-  const [mioApiBase, setMioApiBase] = useState('');
-  const [mioCurrency, setMioCurrency] = useState<LocalCurrency>('DOP');
+  const [mioApiKey, setMioApiKey] = useState('');
+  const [mioGlobalKey, setMioGlobalKey] = useState('');
+  const [mioCurrency, setMioCurrency] = useState<LocalCurrency | ''>('');
   const [mioMode, setMioMode] = useState<GatewayMode>('test');
+  const [mioTestEmail, setMioTestEmail] = useState('');
   const [mioMessage, setMioMessage] = useState<Notice>(null);
+  const mioStatus = status?.mio?.[mioMode];
   useEffect(() => {
-    if (!status?.mio) return;
-    setMioClientId(status.mio.clientId);
-    setMioMerchantId(status.mio.merchantId);
-    setMioAuthUrl(status.mio.authUrl);
-    setMioApiBase(status.mio.apiBase);
-    setMioCurrency(status.mio.currency);
-    setMioMode(status.mio.mode);
-  }, [status?.mio?.clientId, status?.mio?.merchantId, status?.mio?.authUrl, status?.mio?.apiBase, status?.mio?.currency, status?.mio?.mode]);
+    setMioMode(status?.mio?.mode ?? 'test');
+  }, [status?.mio?.mode]);
+  useEffect(() => {
+    setMioCurrency(mioStatus?.currency ?? '');
+    setMioApiKey('');
+    setMioGlobalKey('');
+  }, [mioMode, mioStatus?.currency]);
 
-  const handleSaveMio = (clearSecret = false) =>
+  const handleSaveMio = () =>
     run(setMioMessage, async () => {
-      if (mioAuthUrl.trim() && !/^https:\/\//.test(mioAuthUrl.trim())) throw new Error('La dirección del token debe empezar por https://');
-      if (mioApiBase.trim() && !/^https:\/\//.test(mioApiBase.trim())) throw new Error('La dirección de la API debe empezar por https://');
-      const patch: PaymentConfigPatch = {
-        mioClientId: mioClientId.trim(),
-        mioMerchantId: mioMerchantId.trim(),
-        mioAuthUrl: mioAuthUrl.trim(),
-        mioApiBase: mioApiBase.trim(),
-        mioCurrency,
-        mioMode,
-      };
-      // Write-only: only sent when something was typed.
-      if (clearSecret) patch.mioClientSecret = '';
-      else if (mioClientSecret.trim()) patch.mioClientSecret = mioClientSecret.trim();
-      const next = await savePaymentConfig(patch);
-      setStatus(next);
-      setMioClientSecret('');
-      return clearSecret ? 'Client secret de MIO eliminado.' : 'Datos de MIO guardados.';
+      const patch: PaymentConfigPatch = { mioV5Mode: mioMode };
+      if (mioMode === 'live') {
+        patch.mioV5LiveCurrency = mioCurrency;
+        if (mioApiKey.trim()) patch.mioV5LiveApiKey = mioApiKey.trim();
+        if (mioGlobalKey.trim()) patch.mioV5LiveGlobalKey = mioGlobalKey.trim();
+      } else {
+        patch.mioV5TestCurrency = mioCurrency;
+        if (mioApiKey.trim()) patch.mioV5TestApiKey = mioApiKey.trim();
+        if (mioGlobalKey.trim()) patch.mioV5TestGlobalKey = mioGlobalKey.trim();
+      }
+      setStatus(await savePaymentConfig(patch));
+      setMioApiKey('');
+      setMioGlobalKey('');
+      return 'Configuración de MIO guardada.';
+    });
+
+  const handleMioSandbox = () =>
+    run(setMioMessage, async () => {
+      if (!validPaymentEmail(mioTestEmail)) throw new Error('Escribe un correo válido para la prueba.');
+      window.location.assign(await startMioSandbox(mioTestEmail.trim()));
+      return 'Abriendo la página de pruebas de MIO…';
     });
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -952,98 +955,68 @@ const PaymentSettingsPanel: React.FC<PaymentSettingsPanelProps> = ({ brandSettin
         </div>
       </div>
 
-      {/* ── MIO (API Checkout) ─────────────────────────────────────────── */}
       <div className="mt-5 rounded-3xl border border-ink/10 bg-paper-warm/40 p-5">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h4 className="flex items-center gap-2 font-semibold text-ink">
-              <span className="rounded bg-hibiscus px-1.5 py-0.5 text-[0.65rem] font-black text-white">MIO</span> MIO · cobro con respuesta
-            </h4>
+            <h4 className="font-semibold text-ink">MIO Negocios · Botón de Pago v5</h4>
             <p className="max-w-2xl text-xs text-ink-soft">
-              Con la «API Checkout» de MIO, cada reserva crea un link de pago MIO de un solo uso por el importe
-              exacto; el visitante paga en la página de MIO (Visa, Mastercard o su cuenta MIO), vuelve a este
-              sitio y el cobro se confirma aquí preguntándole a MIO. Sin estas credenciales se usa el link de pago
-              Milin de más abajo, que no devuelve respuesta. En pesos, necesita la tasa de cambio de arriba.
+              MIO recibe los datos de la tarjeta en su página. El sitio confirma el cobro con MIO al recibir el aviso o cuando vuelve el visitante.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <HelpButton onClick={() => setHelp('mio')} />
-            <ReadyChip ready={Boolean(status?.mio?.ready)} mode={status?.mio?.mode} />
+            <ReadyChip ready={Boolean(mioStatus?.ready)} mode={mioMode} />
             <ModeSwitch value={mioMode} onChange={setMioMode} />
           </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <label data-help="mio.clientId" className={label}>
-            <span className={labelText}>Client ID</span>
-            <input className={field} value={mioClientId} onChange={(e) => setMioClientId(e.target.value)} autoComplete="off" />
+          <label data-help="mio.apiKey" className={label}>
+            <span className={labelText}>X-API-KEY {mioStatus?.apiKeyConfigured && '(guardada)'}</span>
+            <input type="password" className={field} value={mioApiKey} onChange={(e) => setMioApiKey(e.target.value)}
+              maxLength={500} placeholder={mioStatus?.apiKeyConfigured ? 'Dejar vacío para conservar' : 'Llave privada de MIO'} autoComplete="new-password" />
           </label>
-          <label data-help="mio.secret" className={label}>
-            <span className={labelText}>Client secret {status?.mio?.secretConfigured && '(guardado)'}</span>
-            <input
-              type="password"
-              className={field}
-              value={mioClientSecret}
-              onChange={(e) => setMioClientSecret(e.target.value)}
-              placeholder={status?.mio?.secretConfigured ? 'Dejar vacío para conservar' : 'Client secret'}
-              autoComplete="off"
-            />
-          </label>
-          <label data-help="mio.merchantId" className={label}>
-            <span className={labelText}>Número de comercio (merchant ID)</span>
-            <input className={field} value={mioMerchantId} onChange={(e) => setMioMerchantId(e.target.value)} inputMode="numeric" placeholder="77000001" />
+          <label data-help="mio.globalKey" className={label}>
+            <span className={labelText}>Global-KEY {mioStatus?.globalKeyConfigured && '(guardada)'}</span>
+            <input type="password" className={field} value={mioGlobalKey} onChange={(e) => setMioGlobalKey(e.target.value)}
+              maxLength={500} placeholder={mioStatus?.globalKeyConfigured ? 'Dejar vacío para conservar' : 'Clave del webhook'} autoComplete="new-password" />
           </label>
           <label data-help="mio.currency" className={label}>
-            <span className={labelText}>Moneda del cobro</span>
-            <select className={field} value={mioCurrency} onChange={(e) => setMioCurrency(e.target.value as LocalCurrency)}>
+            <span className={labelText}>Moneda habilitada por MIO</span>
+            <select className={field} value={mioCurrency} onChange={(e) => setMioCurrency(e.target.value as LocalCurrency | '')}>
+              <option value="">Seleccionar moneda</option>
               <option value="DOP">Pesos dominicanos (DOP)</option>
               <option value="USD">Dólares (USD)</option>
             </select>
           </label>
-          <label data-help="mio.authUrl" className={`${label} md:col-span-2`}>
-            <span className={labelText}>Dirección del token (te la da MIO)</span>
-            <input className={field} value={mioAuthUrl} onChange={(e) => setMioAuthUrl(e.target.value)} placeholder="https://…/oauth/token" autoComplete="off" />
-          </label>
-          <label data-help="mio.apiBase" className={`${label} md:col-span-2`}>
-            <span className={labelText}>Dirección de la API (opcional)</span>
-            <input
-              className={field}
-              value={mioApiBase}
-              onChange={(e) => setMioApiBase(e.target.value)}
-              placeholder={mioMode === 'live' ? 'https://api.geopagos.io' : 'https://api-stable.stg.geopagos.io'}
-              autoComplete="off"
-            />
-          </label>
         </div>
 
-        <p className="mt-3 flex items-start gap-2 text-xs text-ink-light">
-          <FaLock className="mt-0.5 shrink-0" />
-          <span>
-            MIO funciona sobre la plataforma Geopagos. Las credenciales (client ID, client secret, número de comercio
-            y dirección del token) te las entrega tu asesor de negocios de MIO al activar «API Checkout». Deja la
-            dirección de la API vacía salvo que MIO te indique otra. El client secret se queda en el servidor.
-          </span>
-        </p>
+        <div data-help="mio.portal" className="mt-4 space-y-1 break-all text-xs text-ink-soft">
+          <p>Registra el webhook de pagos en «Mi cuenta» <code>{origin}/api/mio-webhook{mioMode === 'test' ? '?mode=test' : ''}</code></p>
+          <p>En «Configuración / Formulario», configura la misma URL para Aprobada y Rechazada <code>{origin}/api/mio-return?{mioMode === 'test' ? 'mode=test&' : ''}token={'{{tokenid}}'}</code></p>
+          <p>Confirma con MIO que las URLs de regreso se aplican a los enlaces creados por Botón de Pago.</p>
+        </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <button data-help="mio.save"
-            onClick={() => handleSaveMio()}
-            disabled={saving}
-            className="rounded-full bg-lagoon-dark px-5 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          >
+          <button data-help="mio.save" onClick={handleSaveMio} disabled={saving || !status}
+            className="rounded-full bg-lagoon-dark px-5 py-2 text-sm font-semibold text-white disabled:opacity-50">
             {saving ? 'Guardando…' : 'Guardar MIO'}
           </button>
-          {status?.mio?.secretConfigured && (
-            <button
-              onClick={() => window.confirm('¿Borrar el client secret? MIO volverá al link Milin hasta que guardes otro.') && handleSaveMio(true)}
-              disabled={saving}
-              className="rounded-full border border-sunset-dark/40 px-5 py-2 text-sm font-semibold text-sunset-dark disabled:opacity-50"
-            >
-              Borrar el client secret
-            </button>
-          )}
           <NoticeLine value={mioMessage} />
         </div>
+
+        {mioMode === 'test' && (
+          <div className="mt-4 grid items-end gap-3 border-t border-ink/10 pt-4 sm:grid-cols-[minmax(0,1fr)_auto]">
+            <label className={label}>
+              <span className={labelText}>Correo para la prueba de US$1 o su equivalente en pesos</span>
+              <input type="email" className={field} value={mioTestEmail} onChange={(e) => setMioTestEmail(e.target.value)} maxLength={200} />
+            </label>
+            <button type="button" onClick={handleMioSandbox} disabled={saving || !status?.mio?.test?.ready}
+              className="rounded-full border border-lagoon-dark px-5 py-3 text-sm font-semibold text-lagoon-dark disabled:opacity-50">
+              Abrir prueba de MIO
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── Where each processor sends the guest back ───────────────────── */}
@@ -1055,7 +1028,7 @@ const PaymentSettingsPanel: React.FC<PaymentSettingsPanelProps> = ({ brandSettin
           Cada procesador devuelve al visitante a una de estas direcciones; el sitio comprueba allí el resultado
           con el procesador y le muestra un mensaje según el código — pagado, rechazado (fondos, límite, tarjeta
           vencida, datos, verificación del banco), cancelado o error — con qué hacer después: reintentar, otra
-          forma de pago, WhatsApp o el carrito. Se envían solas con cada pago; si un banco te pide registrarlas,
+          forma de pago, WhatsApp o el carrito. Para MIO, registra las URLs indicadas arriba. Si otro banco te pide registrar sus URLs,
           son estas (<code>{'{pedido}'}</code> es el número de cada pago):
         </p>
         <ul className="mt-3 space-y-1 break-all font-mono text-[0.7rem] text-ink-soft">
@@ -1064,7 +1037,6 @@ const PaymentSettingsPanel: React.FC<PaymentSettingsPanelProps> = ({ brandSettin
           <li>Verifone: {origin}/api/pay-return/verifone/{'{pedido}'}/approved</li>
           <li>Stripe: {origin}/api/pay-return/stripe/{'{pedido}'}/approved · /cancelled</li>
           <li>PayPal: {origin}/api/pay-return/paypal/{'{pedido}'}/approved · /cancelled</li>
-          <li>MIO: {origin}/api/pay-return/mio/{'{pedido}'}/approved · /declined · aviso: {origin}/api/mio-webhook</li>
         </ul>
       </div>
 
@@ -1091,10 +1063,6 @@ const PaymentSettingsPanel: React.FC<PaymentSettingsPanelProps> = ({ brandSettin
           <label className={label}>
             <span className={labelText}>Verifone u otro (2Checkout, Stripe Payment Link…)</span>
             <input className={field} value={brandSettings.verifoneLink ?? ''} onChange={(e) => setBrandSettings({ ...brandSettings, verifoneLink: e.target.value })} placeholder="https://…" />
-          </label>
-          <label className={label}>
-            <span className={labelText}>Link de pago MIO (Milin) — aparece como «MIO»</span>
-            <input className={field} value={brandSettings.mioLink ?? ''} onChange={(e) => setBrandSettings({ ...brandSettings, mioLink: e.target.value })} placeholder="https://…" />
           </label>
         </div>
 

@@ -128,11 +128,10 @@ const COPY: Record<Lang, Record<string, string>> = {
     paypalNote: 'PayPal opens in a new tab. Come back here afterwards.',
     paypalNoteBack: 'You come back here automatically once PayPal is done.',
     mio: 'MIO',
-    mioHint: 'Visa, Mastercard or your MIO account',
+    mioHint: 'Card payment via MIO Negocios',
     mioTitle: 'Pay with MIO',
     mioGo: 'Continue to MIO',
-    mioNote: 'MIO opens in a new tab. Come back here afterwards.',
-    mioNoteBack: 'You come back here automatically once MIO is done.',
+    mioNoteBack: 'After paying on MIO, select Continue to return and see the result.',
     inPesos: 'In Dominican pesos',
     applepay: 'Apple Pay',
     applepayHint: 'Face ID or Touch ID — no card to type',
@@ -176,11 +175,10 @@ const COPY: Record<Lang, Record<string, string>> = {
     paypalNote: 'PayPal se abre en otra pestaña. Vuelve aquí después.',
     paypalNoteBack: 'Al terminar en PayPal vuelves aquí automáticamente.',
     mio: 'MIO',
-    mioHint: 'Visa, Mastercard o tu cuenta MIO',
+    mioHint: 'Pago con tarjeta vía MIO Negocios',
     mioTitle: 'Pagar con MIO',
     mioGo: 'Continuar a MIO',
-    mioNote: 'MIO se abre en otra pestaña. Vuelve aquí después.',
-    mioNoteBack: 'Al terminar en MIO vuelves aquí automáticamente.',
+    mioNoteBack: 'Después de pagar en MIO, pulsa Continuar para volver y ver el resultado.',
     inPesos: 'En pesos dominicanos',
     applepay: 'Apple Pay',
     applepayHint: 'Face ID o Touch ID, sin escribir la tarjeta',
@@ -224,11 +222,10 @@ const COPY: Record<Lang, Record<string, string>> = {
     paypalNote: 'PayPal öffnet sich in einem neuen Tab. Kommen Sie danach hierher zurück.',
     paypalNoteBack: 'Nach PayPal kommen Sie automatisch hierher zurück.',
     mio: 'MIO',
-    mioHint: 'Visa, Mastercard oder Ihr MIO-Konto',
+    mioHint: 'Kartenzahlung über MIO Negocios',
     mioTitle: 'Mit MIO bezahlen',
     mioGo: 'Weiter zu MIO',
-    mioNote: 'MIO öffnet sich in einem neuen Tab. Kommen Sie danach hierher zurück.',
-    mioNoteBack: 'Nach MIO kommen Sie automatisch hierher zurück.',
+    mioNoteBack: 'Wählen Sie nach der Zahlung bei MIO Weiter, um das Ergebnis hier zu sehen.',
     inPesos: 'In Dominikanischen Pesos',
     applepay: 'Apple Pay',
     applepayHint: 'Face ID oder Touch ID — ohne Kartennummer',
@@ -272,11 +269,10 @@ const COPY: Record<Lang, Record<string, string>> = {
     paypalNote: 'PayPal s’ouvre dans un nouvel onglet. Revenez ici ensuite.',
     paypalNoteBack: 'Une fois sur PayPal terminé, vous revenez ici automatiquement.',
     mio: 'MIO',
-    mioHint: 'Visa, Mastercard ou votre compte MIO',
+    mioHint: 'Paiement par carte via MIO Negocios',
     mioTitle: 'Payer avec MIO',
     mioGo: 'Continuer vers MIO',
-    mioNote: 'MIO s’ouvre dans un nouvel onglet. Revenez ici ensuite.',
-    mioNoteBack: 'Une fois sur MIO terminé, vous revenez ici automatiquement.',
+    mioNoteBack: 'Après le paiement sur MIO, sélectionnez Continuer pour revenir voir le résultat.',
     inPesos: 'En pesos dominicains',
     applepay: 'Apple Pay',
     applepayHint: 'Face ID ou Touch ID, sans saisir de carte',
@@ -454,15 +450,15 @@ export const PaymentDropdown: React.FC<PaymentDropdownProps> = ({
       : [{ title: excursionTitle, date: bookingDate, persons, total: totalUsd, category, serviceId, quantities }];
 
   /** Checked inside the click, so a missing email is said before the guest leaves. */
-  const prePayOk = () => {
-    const problem = prePayProblem(prePay, lang);
+  const prePayOk = (requireEmail = false) => {
+    const problem = prePayProblem(prePay, lang, requireEmail);
     setPrePayError(problem);
     if (problem) return false;
     rememberGuest({ name: prePay.name, phone: prePay.phone, email: prePay.email });
     return true;
   };
 
-  const recordAttempt = (method: string, retryUrl?: string) =>
+  const recordAttempt = (method: string, retryUrl?: string, paymentRef?: string) =>
     startAttempt({
       method,
       source,
@@ -474,6 +470,7 @@ export const PaymentDropdown: React.FC<PaymentDropdownProps> = ({
       contact: { ...prePay.contact, email: prePay.contact.email && flags.guestEmail },
       locale: lang,
       retryUrl,
+      paymentRef,
       clearsCart,
     });
 
@@ -505,30 +502,16 @@ export const PaymentDropdown: React.FC<PaymentDropdownProps> = ({
   /** What MIO charges, when it charges in pesos and the rate is known. */
   const mioPesos = totalUsd && ready?.mioCurrency === 'DOP' && ready.mioDopPerUsd ? Math.round(totalUsd * ready.mioDopPerUsd * 100) / 100 : null;
 
-  /**
-   * MIO without its API: the Milin link from the MIO app, with the amount
-   * filled in where the link asks for it ({amount}, in what MIO charges).
-   */
-  const handleMioLink = () => {
-    const amountText = mioPesos ? mioPesos.toFixed(2) : totalUsd ? totalUsd.toFixed(2) : '';
-    const targetUrl = (brandSettings.mioLink ?? '').replace(/\{amount\}/g, encodeURIComponent(amountText));
-    recordAttempt('mio', targetUrl || undefined);
-    if (targetUrl) window.open(targetUrl, '_blank');
-    if (!flags.operatorAlerts) openWhatsAppConfirmation('MIO');
-    setPaypalModalOpen(false);
-  };
-
   const handleMioProceed = async () => {
     playClickFx();
-    if (!prePayOk()) return;
-    if (!mioApi) return handleMioLink();
+    if (!mioApi || !prePayOk(true)) return;
     // MIO's own payment link, in this tab: MIO brings the guest back to
-    // /api/pay-return, where MIO is asked whether the payment went through.
+    // the booking receipt after the hosted card form.
     setStarting(true);
     setCardError('');
     try {
-      const url = await startMioCheckout(checkoutBooking());
-      recordAttempt('mio');
+      const { url, ref } = await startMioCheckout(checkoutBooking());
+      recordAttempt('mio', undefined, ref);
       window.location.href = url;
     } catch (error: any) {
       setStarting(false);
@@ -540,6 +523,7 @@ export const PaymentDropdown: React.FC<PaymentDropdownProps> = ({
   const checkoutBooking = () => ({
     category,
     serviceId,
+    email: prePay.email.trim(),
     title: excursionTitle,
     persons,
     quantities,
@@ -638,7 +622,7 @@ export const PaymentDropdown: React.FC<PaymentDropdownProps> = ({
    */
   const handleCardProceed = async () => {
     playClickFx();
-    if (!prePayOk()) return;
+    if (!prePayOk(cardReady && ready?.cardRequiresEmail)) return;
 
     if (!cardReady) {
       // A pasted link: no await before the open, so it stays inside the click.
@@ -656,7 +640,7 @@ export const PaymentDropdown: React.FC<PaymentDropdownProps> = ({
     try {
       const start = await startCardCheckout({ ...checkoutBooking(), ...(wallet ? { wallet } : {}) });
       // Recorded once the payment page is certain, right before leaving for it.
-      recordAttempt('card');
+      recordAttempt('card', undefined, start.kind === 'redirect' ? start.orderRef : undefined);
       if (start.kind === 'redirect') window.location.href = start.url;
       else postToGateway(start.action, start.fields);
     } catch (error: any) {
@@ -840,6 +824,7 @@ export const PaymentDropdown: React.FC<PaymentDropdownProps> = ({
                   onChange={setPrePay}
                   locale={lang}
                   emailAvailable={flags.guestEmail}
+                  requireEmail={cardReady && ready?.cardRequiresEmail}
                   method={cardReady ? 'card' : 'card-link'}
                 />
               </div>
@@ -934,7 +919,7 @@ export const PaymentDropdown: React.FC<PaymentDropdownProps> = ({
             </div>
 
             <div className="mt-4">
-              <PrePayDetails value={prePay} onChange={setPrePay} locale={lang} emailAvailable={flags.guestEmail} method={hosted} />
+              <PrePayDetails value={prePay} onChange={setPrePay} locale={lang} emailAvailable={flags.guestEmail} requireEmail={hosted === 'mio'} method={hosted} />
             </div>
 
             {prePayError && (
@@ -954,7 +939,7 @@ export const PaymentDropdown: React.FC<PaymentDropdownProps> = ({
                 {starting ? '…' : `${hosted === 'mio' ? t.mioGo : t.paypalGo} · ${hosted === 'mio' && mioPesos ? formatMoney(mioPesos, 'DOP', lang) : displayPrice}`}
               </button>
               <p className="text-center text-[0.65rem] text-paper/60">
-                {hosted === 'mio' ? (mioApi ? t.mioNoteBack : t.mioNote) : paypalApi ? t.paypalNoteBack : t.paypalNote}
+                {hosted === 'mio' ? t.mioNoteBack : paypalApi ? t.paypalNoteBack : t.paypalNote}
               </p>
             </div>
           </div>

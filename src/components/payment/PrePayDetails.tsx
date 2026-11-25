@@ -28,11 +28,19 @@ export const initialPrePay = (): PrePayState => {
   };
 };
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const validPaymentEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+export const paymentEmailRequired = (locale: string) => localeText(locale, {
+  en: 'Enter your email address to continue to payment.',
+  es: 'Escribe tu correo electrónico para continuar al pago.',
+  de: 'Geben Sie Ihre E-Mail-Adresse ein, um zu bezahlen.',
+  fr: 'Saisissez votre adresse e-mail pour continuer vers le paiement.',
+});
 
 /** A message for the guest when something they chose needs a detail, else ''. */
-export const prePayProblem = (state: PrePayState, locale: string): string => {
-  if (state.contact.email && !EMAIL.test(state.email.trim())) {
+export const prePayProblem = (state: PrePayState, locale: string, requireEmail = false): string => {
+  if (requireEmail && !validPaymentEmail(state.email)) return paymentEmailRequired(locale);
+  if (state.contact.email && !validPaymentEmail(state.email)) {
     return localeText(locale, {
       en: 'Please add your email address — or untick email.',
       es: 'Escribe tu correo electrónico — o quita la opción de email.',
@@ -59,13 +67,14 @@ interface Props {
   locale: string;
   /** Email is only offered when the site can actually send one. */
   emailAvailable: boolean;
+  requireEmail?: boolean;
   method: Method;
   tone?: 'dark' | 'light';
   /** Leave out the tips (the caller shows its own). */
   hideTips?: boolean;
 }
 
-const PrePayDetails: React.FC<Props> = ({ value, onChange, locale, emailAvailable, method, tone = 'dark', hideTips = false }) => {
+const PrePayDetails: React.FC<Props> = ({ value, onChange, locale, emailAvailable, requireEmail, method, tone = 'dark', hideTips = false }) => {
   const dark = tone === 'dark';
   const set = (patch: Partial<PrePayState>) => onChange({ ...value, ...patch });
   const toggle = (key: keyof ContactPrefs) => set({ contact: { ...value.contact, [key]: !value.contact[key] } });
@@ -172,10 +181,10 @@ const PrePayDetails: React.FC<Props> = ({ value, onChange, locale, emailAvailabl
             />
           </label>
         )}
-        {value.contact.email && emailAvailable && (
+        {(requireEmail || (value.contact.email && emailAvailable)) && (
           <label className="block sm:col-span-2">
-            <span className={label}>{t.mail}</span>
-            <input type="email" value={value.email} maxLength={120} autoComplete="email" onChange={(e) => set({ email: e.target.value })} className={field} />
+            <span className={label}>{t.mail}{requireEmail && ' *'}</span>
+            <input type="email" value={value.email} maxLength={200} required={requireEmail} autoComplete="email" onChange={(e) => set({ email: e.target.value })} className={field} />
           </label>
         )}
       </div>

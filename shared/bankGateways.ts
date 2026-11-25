@@ -31,6 +31,7 @@ import {
   AZUL_HOSTS,
   VERIFONE_CHECKOUT_URL,
   PaymentEnv,
+  GatewayMode,
   PaymentSecrets,
   LocalCurrency,
   kvOf,
@@ -68,6 +69,8 @@ export interface PaymentOrder {
   signedPrice?: string;
   /** CardNET's session, Stripe's Checkout Session, PayPal's order id, MIO's payment link id. */
   session?: string;
+  /** Present only for MIO Negocios v5. Older MIO orders use Geopagos. */
+  mioV5?: { mode: GatewayMode; card?: boolean };
   /** CardNET only: reads the session's result back. */
   sessionKey?: string;
   /** PayPal and MIO: where the guest pays, to send them back to. */
@@ -85,7 +88,8 @@ export interface PaymentOrder {
 }
 
 const ORDER_PREFIX = 'payment-order:';
-const ORDER_TTL_SECONDS = 14 * 24 * 60 * 60;
+const MIO_PAID_PREFIX = 'mio-v5:paid:';
+export const ORDER_TTL_SECONDS = 14 * 24 * 60 * 60;
 
 /** 15 digits: unguessable enough for what it guards, and inside both banks' field limits. */
 export const newOrderId = (): string => {
@@ -101,7 +105,9 @@ export const saveOrder = async (env: PaymentEnv, order: PaymentOrder): Promise<b
   const kv = kvOf(env);
   if (!kv) return false;
   try {
-    await kv.put(`${ORDER_PREFIX}${order.id}`, JSON.stringify(order), {
+    // A late decline or duplicate callback cannot overwrite an approval.
+    const prefix = order.mioV5 && order.status === 'paid' ? MIO_PAID_PREFIX : ORDER_PREFIX;
+    await kv.put(`${prefix}${order.id}`, JSON.stringify(order), {
       expirationTtl: ORDER_TTL_SECONDS,
     });
     return true;
@@ -116,7 +122,12 @@ export const readOrder = async (env: PaymentEnv, id: string): Promise<PaymentOrd
   if (!kv || !isOrderId(id)) return null;
   try {
     const stored = await kv.get(`${ORDER_PREFIX}${id}`, { type: 'json' });
-    return stored && typeof stored === 'object' ? (stored as PaymentOrder) : null;
+    if (!stored || typeof stored !== 'object') return null;
+    if (stored.mioV5) {
+      const paid = await kv.get(`${MIO_PAID_PREFIX}${id}`, { type: 'json' });
+      if (paid?.status === 'paid' && paid.session === stored.session) return paid as PaymentOrder;
+    }
+    return stored as PaymentOrder;
   } catch (error) {
     console.warn('[bankGateways] could not read order', id, error);
     return null;

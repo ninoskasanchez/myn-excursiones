@@ -37,6 +37,8 @@ export interface PendingAttempt {
   locale: string;
   /** Where to send the guest to try again: the PayPal or payment-link URL. */
   retryUrl?: string;
+  /** MIO v5 uses the server-verified receipt for this order. */
+  paymentRef?: string;
   /** Whether the cart should be emptied once the guest says it worked. */
   clearsCart?: boolean;
 }

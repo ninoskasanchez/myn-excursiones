@@ -44,6 +44,8 @@ import { onRequest as handlePayReturn } from '../functions/api/pay-return';
 import { onRequest as handlePaymentResult } from '../functions/api/payment-result';
 import { onRequest as handlePayPalCheckout } from '../functions/api/paypal-checkout';
 import { onRequest as handleMioCheckout } from '../functions/api/mio-checkout';
+import { sweepMioNotifications } from '../shared/mioV5';
+import { onRequest as handleMioReturn } from '../functions/api/mio-return';
 import { onRequest as handleMioWebhook } from '../functions/api/mio-webhook';
 import { onRequest as handlePayRetry } from '../functions/api/pay-retry';
 import { onRequest as handleContactRequest } from '../functions/api/contact-request';
@@ -111,6 +113,7 @@ const ROUTES: Record<string, RouteHandler> = {
   '/api/paypal-checkout': handlePayPalCheckout,
   '/api/mio-checkout': handleMioCheckout,
   '/api/mio-webhook': handleMioWebhook,
+  '/api/mio-return': handleMioReturn,
   '/api/pay-retry': handlePayRetry,
   '/api/contact-request': handleContactRequest,
   // The shopping cart's side of things: who to tell (and how), payment
@@ -187,6 +190,7 @@ export default {
     if (ctx && handler && Date.now() - lastSweep > SWEEP_EVERY_MS) {
       lastSweep = Date.now();
       ctx.waitUntil(sweepOverdue(env).catch((error) => console.warn('[sweep]', error)));
+      ctx.waitUntil(sweepMioNotifications(env).catch(() => console.warn('[mio-v5] confirmation sweep deferred')));
     }
 
     return withPreviewHeaders(response, url.hostname, env);
@@ -195,5 +199,6 @@ export default {
   /** For a `[triggers] crons` entry, should one ever be added to wrangler.toml. */
   async scheduled(_event: unknown, env: Env, ctx: ExecutionContext): Promise<void> {
     ctx.waitUntil(sweepOverdue(env));
+    ctx.waitUntil(sweepMioNotifications(env));
   },
 };

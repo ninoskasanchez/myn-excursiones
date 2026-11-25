@@ -27,13 +27,14 @@ export async function onRequest(context: { request: Request; env: PaymentEnv }) 
     return json({ error: 'Invalid request body.' }, 400);
   }
 
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return json({ error: 'Invalid request body.' }, 400);
   const result = await startCardCheckout(env, request, body);
   if (!result.ok) {
     return json({ error: result.error, code: result.code }, result.status);
   }
 
   return result.kind === 'redirect'
-    ? json({ kind: 'redirect', url: result.url })
+    ? json({ kind: 'redirect', url: result.url, ...(result.processor === 'mio' ? { orderRef: result.ref } : {}) })
     : json({
         kind: 'form',
         method: 'POST',

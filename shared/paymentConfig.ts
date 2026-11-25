@@ -147,16 +147,7 @@ export interface PaymentSecrets {
   /** The app's Secret. Never leaves the server. */
   paypalSecret: string;
 
-  /**
-   * MIO (Banreservas' e-money and acquiring company, mio.com.do), through its
-   * "API Checkout": the server mints a one-use MIO payment link for the exact
-   * amount, the guest pays on MIO's page (Visa, Mastercard, a MIO account),
-   * and the server asks MIO about that link before anything is called paid.
-   * MIO runs on Geopagos, and its API is Geopagos' Payments API v4
-   * (docs.geopagos.io). The credentials come from MIO's business adviser once
-   * "API Checkout" is enabled for the merchant; without them the storefront
-   * falls back to the "Milin" link kept in the brand settings. See shared/mio.ts.
-   */
+  /** Deprecated Geopagos settings, retained to settle existing MIO orders. */
   mioMode: GatewayMode;
   /** OAuth client id, from MIO. */
   mioClientId: string;
@@ -169,6 +160,13 @@ export interface PaymentSecrets {
   /** The Payments API host, when MIO names one other than Geopagos' own for the mode. */
   mioApiBase: string;
   mioCurrency: LocalCurrency;
+  mioV5Mode: GatewayMode;
+  mioV5LiveCurrency: LocalCurrency | '';
+  mioV5TestCurrency: LocalCurrency | '';
+  mioV5LiveApiKey: string;
+  mioV5TestApiKey: string;
+  mioV5LiveGlobalKey: string;
+  mioV5TestGlobalKey: string;
 }
 
 /** What the admin panel is allowed to know about the above. */
@@ -222,13 +220,16 @@ export interface PaymentConfigStatus {
   mio: {
     ready: boolean;
     mode: GatewayMode;
-    clientId: string;
-    merchantId: string;
-    authUrl: string;
-    apiBase: string;
-    currency: LocalCurrency;
-    secretConfigured: boolean;
+    live: MioV5ConfigStatus;
+    test: MioV5ConfigStatus;
   };
+}
+
+interface MioV5ConfigStatus {
+  ready: boolean;
+  currency: LocalCurrency | '';
+  apiKeyConfigured: boolean;
+  globalKeyConfigured: boolean;
 }
 
 const DEFAULTS: PaymentSecrets = {
@@ -267,6 +268,13 @@ const DEFAULTS: PaymentSecrets = {
   mioAuthUrl: '',
   mioApiBase: '',
   mioCurrency: 'DOP',
+  mioV5Mode: 'test',
+  mioV5LiveCurrency: '',
+  mioV5TestCurrency: '',
+  mioV5LiveApiKey: '',
+  mioV5TestApiKey: '',
+  mioV5LiveGlobalKey: '',
+  mioV5TestGlobalKey: '',
 };
 
 /** 2Checkout's hosted ConvertPlus cart — where a Verifone buy-link points. */
@@ -308,6 +316,8 @@ export const CARDNET_HOSTS: Record<GatewayMode, string> = {
 interface KVLike {
   get(key: string, options?: { type: 'json' }): Promise<any>;
   put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
+  delete?(key: string): Promise<void>;
+  list?(options: { prefix: string; limit: number }): Promise<{ keys: Array<{ name: string }> }>;
 }
 
 export interface PaymentEnv {
@@ -335,6 +345,10 @@ export interface PaymentEnv {
   PAYPAL_SECRET?: string;
   /** The MIO client secret as a Worker secret, which wins over KV. */
   MIO_CLIENT_SECRET?: string;
+  MIO_V5_LIVE_API_KEY?: string;
+  MIO_V5_LIVE_GLOBAL_KEY?: string;
+  MIO_V5_TEST_API_KEY?: string;
+  MIO_V5_TEST_GLOBAL_KEY?: string;
   [key: string]: unknown;
 }
 
@@ -434,6 +448,13 @@ const normalize = (input: unknown, env: PaymentEnv): PaymentSecrets => {
     mioAuthUrl: httpsUrl(source.mioAuthUrl),
     mioApiBase: httpsUrl(source.mioApiBase),
     mioCurrency: currency(source.mioCurrency, DEFAULTS.mioCurrency),
+    mioV5Mode: mode(source.mioV5Mode),
+    mioV5LiveCurrency: source.mioV5LiveCurrency === 'USD' || source.mioV5LiveCurrency === 'DOP' ? source.mioV5LiveCurrency : '',
+    mioV5TestCurrency: source.mioV5TestCurrency === 'USD' || source.mioV5TestCurrency === 'DOP' ? source.mioV5TestCurrency : '',
+    mioV5LiveApiKey: text(source.mioV5LiveApiKey, 500),
+    mioV5TestApiKey: text(source.mioV5TestApiKey, 500),
+    mioV5LiveGlobalKey: text(source.mioV5LiveGlobalKey, 500),
+    mioV5TestGlobalKey: text(source.mioV5TestGlobalKey, 500),
   };
 };
 
@@ -473,6 +494,10 @@ export const readPaymentSecrets = async (env: PaymentEnv): Promise<PaymentSecret
     stored.mioClientSecret = mioFromEnv;
   }
 
+  stored.mioV5LiveApiKey = text(env.MIO_V5_LIVE_API_KEY, 500) || stored.mioV5LiveApiKey;
+  stored.mioV5TestApiKey = text(env.MIO_V5_TEST_API_KEY, 500) || stored.mioV5TestApiKey;
+  stored.mioV5LiveGlobalKey = text(env.MIO_V5_LIVE_GLOBAL_KEY, 500) || stored.mioV5LiveGlobalKey;
+  stored.mioV5TestGlobalKey = text(env.MIO_V5_TEST_GLOBAL_KEY, 500) || stored.mioV5TestGlobalKey;
   return stored;
 };
 
@@ -534,15 +559,23 @@ export const isVerifoneReady = (secrets: PaymentSecrets): boolean =>
 export const isPayPalReady = (secrets: PaymentSecrets): boolean =>
   Boolean(secrets.paypalClientId && secrets.paypalSecret);
 
-/** MIO's API Checkout, as opposed to the Milin link kept in the brand settings. */
+export const mioV5Settings = (secrets: PaymentSecrets, mode: GatewayMode) =>
+  mode === 'live'
+    ? { currency: secrets.mioV5LiveCurrency, apiKey: secrets.mioV5LiveApiKey, globalKey: secrets.mioV5LiveGlobalKey }
+    : { currency: secrets.mioV5TestCurrency, apiKey: secrets.mioV5TestApiKey, globalKey: secrets.mioV5TestGlobalKey };
+
+export const isMioV5Configured = (secrets: PaymentSecrets, mode: GatewayMode): boolean => {
+  const { currency, apiKey, globalKey } = mioV5Settings(secrets, mode);
+  return Boolean(apiKey && globalKey && currency && currencyUsable(currency, secrets));
+};
+
 export const isMioReady = (secrets: PaymentSecrets): boolean =>
-  Boolean(
-    secrets.mioClientId &&
-      secrets.mioClientSecret &&
-      secrets.mioMerchantId &&
-      secrets.mioAuthUrl &&
-      currencyUsable(secrets.mioCurrency, secrets)
-  );
+  secrets.mioV5Mode === 'live' && isMioV5Configured(secrets, 'live');
+
+const describeMioV5 = (secrets: PaymentSecrets, mode: GatewayMode): MioV5ConfigStatus => {
+  const { currency, apiKey, globalKey } = mioV5Settings(secrets, mode);
+  return { currency, ready: isMioV5Configured(secrets, mode), apiKeyConfigured: Boolean(apiKey), globalKeyConfigured: Boolean(globalKey) };
+};
 
 export const processorReady = (secrets: PaymentSecrets): Record<CardProcessor, boolean> => ({
   stripe: secrets.stripeSecretKey.length > 0,
@@ -587,7 +620,7 @@ export const cardChargeCurrency = (secrets: PaymentSecrets, processor: CardProce
   if (processor === 'azul') return secrets.azulCurrency;
   if (processor === 'cardnet') return secrets.cardnetCurrency;
   if (processor === 'verifone') return secrets.verifoneCurrency;
-  if (processor === 'mio') return secrets.mioCurrency;
+  if (processor === 'mio') return secrets.mioV5LiveCurrency || 'DOP';
   return secrets.stripeCurrency.toUpperCase();
 };
 
@@ -640,13 +673,9 @@ export const describePaymentConfig = async (env: PaymentEnv): Promise<PaymentCon
     },
     mio: {
       ready: isMioReady(secrets),
-      mode: secrets.mioMode,
-      clientId: secrets.mioClientId,
-      merchantId: secrets.mioMerchantId,
-      authUrl: secrets.mioAuthUrl,
-      apiBase: secrets.mioApiBase,
-      currency: secrets.mioCurrency,
-      secretConfigured: secrets.mioClientSecret.length > 0,
+      mode: secrets.mioV5Mode,
+      live: describeMioV5(secrets, 'live'),
+      test: describeMioV5(secrets, 'test'),
     },
   };
 };

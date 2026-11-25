@@ -40,11 +40,10 @@ const TEXT_FIELDS: Partial<Record<keyof PaymentSecrets, number>> = {
   verifoneSecretWord: 400,
   paypalClientId: 200,
   paypalSecret: 200,
-  mioClientId: 200,
-  mioClientSecret: 400,
-  mioMerchantId: 20,
-  mioAuthUrl: 300,
-  mioApiBase: 300,
+  mioV5LiveApiKey: 500,
+  mioV5TestApiKey: 500,
+  mioV5LiveGlobalKey: 500,
+  mioV5TestGlobalKey: 500,
 };
 export async function onRequest(context: { request: Request; env: PaymentEnv }) {
   const { request, env } = context;
@@ -102,6 +101,9 @@ export async function onRequest(context: { request: Request; env: PaymentEnv }) 
     for (const [field, max] of Object.entries(TEXT_FIELDS) as [keyof PaymentSecrets, number][]) {
       const value = body[field];
       if (typeof value === 'string') {
+        if (field.startsWith('mioV5') && /[^\x21-\x7E]/.test(value.trim())) {
+          return json({ error: 'Las llaves de MIO no deben contener espacios ni caracteres de control.' }, 400);
+        }
         (patch as Record<string, unknown>)[field] = value.trim().slice(0, max);
       }
     }
@@ -126,11 +128,16 @@ export async function onRequest(context: { request: Request; env: PaymentEnv }) 
       patch.cardProcessor = body.cardProcessor as PaymentSecrets['cardProcessor'];
     }
 
-    for (const field of ['azulMode', 'cardnetMode', 'verifoneMode', 'paypalMode', 'mioMode'] as const) {
+    for (const field of ['azulMode', 'cardnetMode', 'verifoneMode', 'paypalMode', 'mioV5Mode'] as const) {
       if (body[field] === 'test' || body[field] === 'live') patch[field] = body[field] as 'test' | 'live';
     }
-    for (const field of ['azulCurrency', 'cardnetCurrency', 'verifoneCurrency', 'mioCurrency'] as const) {
+    for (const field of ['azulCurrency', 'cardnetCurrency', 'verifoneCurrency'] as const) {
       if (body[field] === 'USD' || body[field] === 'DOP') patch[field] = body[field] as 'USD' | 'DOP';
+    }
+
+    for (const field of ['mioV5LiveCurrency', 'mioV5TestCurrency'] as const) {
+      const value = body[field];
+      if (value === 'USD' || value === 'DOP' || value === '') patch[field] = value;
     }
 
     for (const field of ['dopPerUsd', 'itbisPercent'] as const) {

@@ -48,12 +48,13 @@ import { siteNames } from '../utils/brandText';
  * which company processed the card is the operator's business.
  */
 
-type Outcome = 'paid' | 'declined' | 'cancelled' | 'error';
+type Outcome = 'paid' | 'pending' | 'declined' | 'cancelled' | 'error';
 
 type Receipt = {
   outcome: Outcome;
   /** Paid, but the processor's word could not be checked: the operator must look. */
   unverified: boolean;
+  sandbox?: boolean;
   reason: PaymentReason;
   method: 'card' | 'paypal' | 'mio';
   amountTotal: number | null;
@@ -83,14 +84,17 @@ const fromStripe = (payment: CheckoutResult, sessionId: string): Receipt => ({
 
 const fromOrder = (payment: BankPaymentResult, ref: string): Receipt => ({
   outcome:
-    payment.status === 'paid' || payment.status === 'unverified'
+    payment.mioV5 && (payment.status === 'pending' || payment.status === 'unverified')
+      ? 'pending'
+      : payment.status === 'paid' || payment.status === 'unverified'
       ? 'paid'
       : payment.status === 'cancelled'
       ? 'cancelled'
       : payment.status === 'declined'
       ? 'declined'
       : 'error',
-  unverified: payment.status === 'unverified',
+  unverified: !payment.mioV5 && payment.status === 'unverified',
+  sandbox: payment.sandbox,
   reason: payment.reason || (payment.status === 'declined' ? 'declined' : ''),
   method: payment.method === 'paypal' ? 'paypal' : payment.method === 'mio' ? 'mio' : 'card',
   amountTotal: payment.amountTotal,
@@ -113,7 +117,7 @@ const fromOrder = (payment: BankPaymentResult, ref: string): Receipt => ({
  */
 const settleAttempt = (receipt: Receipt | null, outcome: 'verified' | 'paid' | 'problem' | 'cancelled', reference: string) => {
   const attempt = readPendingAttempt();
-  if (!attempt) return;
+  if (!attempt || (attempt.paymentRef && attempt.paymentRef !== reference)) return;
   const sameKind =
     receipt?.method === 'paypal' || receipt?.method === 'mio' ? attempt.method === receipt.method : attempt.method.startsWith('card');
   if (!sameKind) return;
@@ -243,6 +247,7 @@ const PaymentReturn: React.FC = () => {
   const [orderRef, setOrderRef] = useState('');
   const [retrying, setRetrying] = useState(false);
   const [retryError, setRetryError] = useState('');
+  const [checkCount, setCheckCount] = useState(0);
 
   const params = new URLSearchParams(location.search);
   const paidFlag = params.get('paid');
@@ -286,6 +291,7 @@ const PaymentReturn: React.FC = () => {
         if (!current) return;
         setResult(payment);
         setState('done');
+        if (payment.sandbox || payment.outcome === 'pending') return;
         track('pay_result', {
           status: payment.unverified ? 'unverified' : payment.outcome,
           reason: payment.reason || undefined,
@@ -316,7 +322,7 @@ const PaymentReturn: React.FC = () => {
     return () => {
       current = false;
     };
-  }, [paidFlag, incomingSession, incomingRef]);
+  }, [paidFlag, incomingSession, incomingRef, checkCount]);
 
   const operatorMessage = useCallback(() => {
     if (!result) return '';
@@ -422,8 +428,9 @@ const PaymentReturn: React.FC = () => {
   );
 
   const paid = state === 'done' && result?.outcome === 'paid';
-  const notPaid = state === 'done' && result && result.outcome !== 'paid';
-  const canRetry = Boolean(orderRef);
+  const pending = state === 'done' && result?.outcome === 'pending';
+  const notPaid = state === 'done' && result && result.outcome !== 'paid' && !pending;
+  const canRetry = Boolean(orderRef) && !result?.sandbox;
 
   return (
     <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-ink/80 p-4" role="dialog" aria-modal="true" aria-labelledby="pay-return-title">
@@ -442,6 +449,23 @@ const PaymentReturn: React.FC = () => {
               {L({ en: 'Checking your payment…', es: 'Confirmando el pago…', de: 'Zahlung wird geprüft…', fr: 'Vérification du paiement…' })}
             </h2>
             <p className="mt-3 text-ink-soft">{L({ en: 'One moment, please.', es: 'Un momento, por favor.', de: 'Einen Moment, bitte.', fr: 'Un instant, s’il vous plaît.' })}</p>
+          </>
+        )}
+
+        {result?.sandbox && <p className="mb-3 text-sm font-bold text-lagoon-dark">MIO Sandbox · pago de prueba</p>}
+
+        {pending && (
+          <>
+            <h2 id="pay-return-title" className="font-display text-2xl font-bold">
+              {L({ en: 'Payment awaiting confirmation', es: 'Pago pendiente de confirmación', de: 'Zahlung wartet auf Bestätigung', fr: 'Paiement en attente de confirmation' })}
+            </h2>
+            <p className="mt-3 text-sm text-ink-soft">
+              {L({ en: 'Check again in a moment. If you were charged, keep your receipt.', es: 'Consulta de nuevo en un momento. Si se hizo el cobro, guarda tu comprobante.', de: 'Prüfen Sie den Status gleich noch einmal. Falls Ihre Karte belastet wurde, bewahren Sie den Beleg auf.', fr: 'Vérifiez à nouveau dans un instant. Si vous avez été débité, conservez votre reçu.' })}
+            </p>
+            <p className="mt-3 text-xs text-ink-soft">Ref: {paymentId}</p>
+            <button type="button" onClick={() => setCheckCount((count) => count + 1)} className="tropical-button mt-4 w-full justify-center">
+              {L({ en: 'Check again', es: 'Consultar de nuevo', de: 'Erneut prüfen', fr: 'Vérifier à nouveau' })}
+            </button>
           </>
         )}
 
@@ -497,27 +521,29 @@ const PaymentReturn: React.FC = () => {
               </div>
             </div>
 
-            <p className="mt-5 text-sm text-ink-soft">
-              {L({
-                en: `We are now letting ${siteNames(brandSettings).contact} know on WhatsApp with your payment details.`,
-                es: `Ahora avisamos a ${siteNames(brandSettings).contact} por WhatsApp con los detalles de tu pago.`,
-                de: `Wir informieren jetzt ${siteNames(brandSettings).contact} per WhatsApp über Ihre Zahlung.`,
-                fr: `Nous prévenons maintenant ${siteNames(brandSettings).contact} sur WhatsApp avec les détails de votre paiement.`,
-              })}
-            </p>
+            {!result.sandbox && <>
+              <p className="mt-5 text-sm text-ink-soft">
+                {L({
+                  en: `We are now letting ${siteNames(brandSettings).contact} know on WhatsApp with your payment details.`,
+                  es: `Ahora avisamos a ${siteNames(brandSettings).contact} por WhatsApp con los detalles de tu pago.`,
+                  de: `Wir informieren jetzt ${siteNames(brandSettings).contact} per WhatsApp über Ihre Zahlung.`,
+                  fr: `Nous prévenons maintenant ${siteNames(brandSettings).contact} sur WhatsApp avec les détails de votre paiement.`,
+                })}
+              </p>
 
-            <button onClick={notifyOperator} className="tropical-button mt-5 w-full justify-center">
-              <FaWhatsapp className="h-4 w-4" />
-              {countdown !== null
-                ? `${L({ en: 'Notify now', es: 'Avisar ahora', de: 'Jetzt benachrichtigen', fr: 'Prévenir maintenant' })} (${countdown})`
-                : L({ en: 'Notify on WhatsApp', es: 'Avisar por WhatsApp', de: 'Per WhatsApp benachrichtigen', fr: 'Prévenir sur WhatsApp' })}
-            </button>
+              <button onClick={notifyOperator} className="tropical-button mt-5 w-full justify-center">
+                <FaWhatsapp className="h-4 w-4" />
+                {countdown !== null
+                  ? `${L({ en: 'Notify now', es: 'Avisar ahora', de: 'Jetzt benachrichtigen', fr: 'Prévenir maintenant' })} (${countdown})`
+                  : L({ en: 'Notify on WhatsApp', es: 'Avisar por WhatsApp', de: 'Per WhatsApp benachrichtigen', fr: 'Prévenir sur WhatsApp' })}
+              </button>
+            </>}
 
             <button
               onClick={dismiss}
               className="mt-3 w-full text-xs font-semibold text-ink-light underline underline-offset-4 transition hover:text-ink"
             >
-              {L({ en: 'Not now', es: 'Ahora no', de: 'Nicht jetzt', fr: 'Pas maintenant' })}
+              {result.sandbox ? L({ en: 'Close', es: 'Cerrar', de: 'Schließen', fr: 'Fermer' }) : L({ en: 'Not now', es: 'Ahora no', de: 'Nicht jetzt', fr: 'Pas maintenant' })}
             </button>
           </>
         )}
@@ -559,13 +585,13 @@ const PaymentReturn: React.FC = () => {
                   {retrying ? '…' : L({ en: 'Try again', es: 'Intentar de nuevo', de: 'Erneut versuchen', fr: 'Réessayer' })}
                 </button>
               )}
-              {state !== 'failed' && (
+              {state !== 'failed' && !result?.sandbox && (
                 <button type="button" onClick={anotherWay} className="tropical-button-outline w-full justify-center">
                   <FaWallet className="h-3.5 w-3.5" />
                   {L({ en: 'Choose another way to pay', es: 'Elegir otra forma de pago', de: 'Andere Zahlungsart wählen', fr: 'Choisir un autre moyen de paiement' })}
                 </button>
               )}
-              {helpUrl && (
+              {helpUrl && !result?.sandbox && (
                 <a href={helpUrl} target="_blank" rel="noreferrer" className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-jungle/40 px-5 py-2.5 text-sm font-bold text-jungle-dark">
                   <FaWhatsapp /> {L({ en: 'Ask us on WhatsApp', es: 'Escríbenos por WhatsApp', de: 'Fragen Sie uns auf WhatsApp', fr: 'Écrivez-nous sur WhatsApp' })}
                 </a>

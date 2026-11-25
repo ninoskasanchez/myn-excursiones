@@ -1,3 +1,4 @@
+import { paymentEmailRequired, validPaymentEmail } from './PrePayDetails';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FaCreditCard, FaPaypal, FaWhatsapp } from 'react-icons/fa';
@@ -55,7 +56,7 @@ const QuickPay: React.FC<{ id?: string }> = ({ id = 'pay' }) => {
   const [ready, setReady] = useState<PaymentsReady | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [left, setLeft] = useState<'' | 'card' | 'paypal' | 'mio'>('');
+  const [left, setLeft] = useState<'' | 'card' | 'paypal'>('');
 
   const [guestEmail, setGuestEmail] = useState(false);
 
@@ -131,7 +132,7 @@ const QuickPay: React.FC<{ id?: string }> = ({ id = 'pay' }) => {
   };
 
   /** The payment the guest is leaving to make, so the site can ask how it went. */
-  const attempt = (method: string, retryUrl?: string) =>
+  const attempt = (method: string, retryUrl?: string, paymentRef?: string) =>
     startAttempt({
       method,
       source: 'contact',
@@ -143,10 +144,12 @@ const QuickPay: React.FC<{ id?: string }> = ({ id = 'pay' }) => {
       contact: { whatsapp: true, email: guestEmail && /@/.test(email), call: false },
       locale,
       retryUrl,
+      paymentRef,
     });
 
   const payByCard = async () => {
     if (!valid) return setError(t.badAmount);
+    if (ready?.cardRequiresEmail && !validPaymentEmail(email)) return setError(paymentEmailRequired(locale));
     setError('');
     record('card');
     if (!cardReady) {
@@ -167,10 +170,11 @@ const QuickPay: React.FC<{ id?: string }> = ({ id = 'pay' }) => {
         title: label,
         persons: 1,
         amount: value,
+        email: email.trim(),
         locale,
         returnPath: '/contact',
       });
-      attempt('card');
+      attempt('card', undefined, start.kind === 'redirect' ? start.orderRef : undefined);
       if (start.kind === 'redirect') window.location.href = start.url;
       else postToGateway(start.action, start.fields);
     } catch (failure: any) {
@@ -207,35 +211,24 @@ const QuickPay: React.FC<{ id?: string }> = ({ id = 'pay' }) => {
 
   const payByMio = async () => {
     if (!valid) return setError(t.badAmount);
+    if (!validPaymentEmail(email)) return setError(paymentEmailRequired(locale));
+    if (!ready?.mio) return;
     setError('');
-    record('MIO');
-    if (ready?.mio) {
-      // A MIO payment link for this amount, in this tab; MIO brings the guest
-      // back and the payment is checked with MIO on the way in.
-      setBusy(true);
-      try {
-        const url = await startMioCheckout({ category: 'custom', title: label, persons: 1, amount: value, locale, returnPath: '/contact' });
-        attempt('mio');
-        window.location.href = url;
-      } catch (failure: any) {
-        setBusy(false);
-        setError(failure?.message || 'MIO could not be opened.');
-      }
-      return;
-    }
-    // The Milin link from the MIO app, with the amount filled in where it asks for one.
-    const charged = ready?.mioCurrency === 'DOP' && ready.mioDopPerUsd ? value * ready.mioDopPerUsd : value;
-    const url = (brandSettings.mioLink ?? '').replace(/\{amount\}/g, encodeURIComponent(charged.toFixed(2)));
-    if (url) {
-      attempt('mio', url);
-      window.open(url, '_blank', 'noopener');
-      setLeft('mio');
+    setBusy(true);
+    try {
+      const { url, ref } = await startMioCheckout({ category: 'custom', title: label, persons: 1, amount: value, email: email.trim(), locale, returnPath: '/contact' });
+      record('MIO');
+      attempt('mio', undefined, ref);
+      window.location.href = url;
+    } catch (failure: any) {
+      setBusy(false);
+      setError(failure?.message || 'MIO could not be opened.');
     }
   };
 
   const tellUrl = generateWhatsAppMessage(
     brandSettings.phoneNumber,
-    `${localeText(locale, { en: 'Hello! I just paid', es: '¡Hola! Acabo de pagar', de: 'Hallo! Ich habe gerade', fr: 'Bonjour ! Je viens de payer' })} US$ ${valid ? value.toFixed(2) : amount}${locale === 'de' ? ' bezahlt' : ''} (${left === 'paypal' ? 'PayPal' : left === 'mio' ? 'MIO' : localeText(locale, { en: 'card', es: 'tarjeta', de: 'Karte', fr: 'carte' })}) — ${reference.trim() || '—'}${name ? ` · ${name}` : ''}`
+    `${localeText(locale, { en: 'Hello! I just paid', es: '¡Hola! Acabo de pagar', de: 'Hallo! Ich habe gerade', fr: 'Bonjour ! Je viens de payer' })} US$ ${valid ? value.toFixed(2) : amount}${locale === 'de' ? ' bezahlt' : ''} (${left === 'paypal' ? 'PayPal' : localeText(locale, { en: 'card', es: 'tarjeta', de: 'Karte', fr: 'carte' })}) — ${reference.trim() || '—'}${name ? ` · ${name}` : ''}`
   );
 
   const anyMethod = methods.card.visible || methods.paypal.visible || methods.mio.visible;

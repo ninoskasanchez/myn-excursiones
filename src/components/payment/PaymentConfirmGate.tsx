@@ -54,7 +54,7 @@ const PaymentConfirmGate: React.FC = () => {
   const params = new URLSearchParams(search);
   // A gateway's own answer is on its way (PaymentReturn), or this is the admin.
   const busyElsewhere = pathname.startsWith('/admin') || params.has('payment_ref') || params.has('paid') || params.has('session_id');
-  if (!attempt || busyElsewhere) return null;
+  if (!attempt || attempt.paymentRef || busyElsewhere) return null;
 
   return (
     <Suspense fallback={null}>

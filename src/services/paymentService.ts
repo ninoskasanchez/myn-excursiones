@@ -1,5 +1,5 @@
 import { getAdminPassword } from './authStore';
-import type { PayPalCheckout } from '../../shared/paymentConfig';
+import type { PaymentConfigStatus as ServerPaymentConfigStatus, PayPalCheckout } from '../../shared/paymentConfig';
 
 export type { PayPalCheckout } from '../../shared/paymentConfig';
 
@@ -18,6 +18,7 @@ export interface CheckoutBooking {
    * 'custom' is an agreed amount with no catalogue item behind it.
    */
   category: string;
+  email?: string;
   /** Positional catalogue id, used as a fallback match after the title. */
   serviceId?: number | string;
   title: string;
@@ -103,17 +104,7 @@ export interface PaymentConfigStatus {
     clientId: string;
     secretConfigured: boolean;
   };
-  /** MIO's API Checkout — a one-use MIO payment link per booking, verified on return. */
-  mio?: {
-    ready: boolean;
-    mode: GatewayMode;
-    clientId: string;
-    merchantId: string;
-    authUrl: string;
-    apiBase: string;
-    currency: LocalCurrency;
-    secretConfigured: boolean;
-  };
+  mio?: ServerPaymentConfigStatus['mio'];
 }
 
 /** Everything the admin panel may send. Omitted fields stay as stored. */
@@ -148,14 +139,13 @@ export interface PaymentConfigPatch {
   paypalClientId?: string;
   /** Write-only. Empty string clears it. */
   paypalSecret?: string;
-  mioMode?: GatewayMode;
-  mioClientId?: string;
-  /** Write-only. Empty string clears it. */
-  mioClientSecret?: string;
-  mioMerchantId?: string;
-  mioAuthUrl?: string;
-  mioApiBase?: string;
-  mioCurrency?: LocalCurrency;
+  mioV5Mode?: GatewayMode;
+  mioV5LiveCurrency?: LocalCurrency | '';
+  mioV5TestCurrency?: LocalCurrency | '';
+  mioV5LiveApiKey?: string;
+  mioV5TestApiKey?: string;
+  mioV5LiveGlobalKey?: string;
+  mioV5TestGlobalKey?: string;
 }
 
 /**
@@ -165,6 +155,7 @@ export interface PaymentConfigPatch {
  */
 export interface PaymentsReady {
   card: boolean;
+  cardRequiresEmail: boolean;
   /** ISO code the card is charged in, e.g. USD or DOP. */
   currency: string;
   /** Pesos per catalogue dollar, when the card is charged in pesos. */
@@ -184,7 +175,7 @@ export interface PaymentsReady {
 
 /** Where to send the guest: a hosted page to open, or a form to post to one. */
 export type CardCheckoutStart =
-  | { kind: 'redirect'; url: string }
+  | { kind: 'redirect'; url: string; orderRef?: string }
   | { kind: 'form'; action: string; fields: Record<string, string>; amount: number; currency: string };
 
 /**
@@ -206,7 +197,9 @@ export type PaymentReason =
 
 /** What /api/payment-result says became of a payment that came back with `?payment_ref=`. */
 export interface BankPaymentResult {
-  provider: BankProvider | 'stripe' | 'paypal';
+  provider: BankProvider | 'stripe' | 'paypal' | 'mio';
+  mioV5?: boolean;
+  sandbox?: boolean;
   /** What the guest chose: all the page may name. */
   method: 'card' | 'paypal' | 'mio';
   status: 'pending' | 'paid' | 'declined' | 'cancelled' | 'unverified' | 'error';
@@ -278,6 +271,7 @@ export const savePaymentConfig = async (patch: PaymentConfigPatch): Promise<Paym
 
 const NOT_READY: PaymentsReady = {
   card: false,
+  cardRequiresEmail: false,
   currency: 'USD',
   dopPerUsd: null,
   wallets: [],
@@ -300,6 +294,7 @@ export const getPaymentsReady = async (): Promise<PaymentsReady> => {
     if (!body || typeof body !== 'object') return NOT_READY;
     return {
       card: Boolean(body.card),
+      cardRequiresEmail: body.cardRequiresEmail === true,
       currency: typeof body.currency === 'string' && body.currency ? body.currency.toUpperCase() : 'USD',
       dopPerUsd: typeof body.dopPerUsd === 'number' && body.dopPerUsd > 0 ? body.dopPerUsd : null,
       wallets: Array.isArray(body.wallets)
@@ -356,22 +351,26 @@ export const startPayPalCheckout = async (booking: CheckoutBooking): Promise<str
   return body.url;
 };
 
-/**
- * Pay with MIO through its API Checkout. Answers with MIO's payment page; the
- * guest comes back to /api/pay-return, where MIO is asked about the payment.
- */
-export const startMioCheckout = async (booking: CheckoutBooking): Promise<string> => {
-  const response = await fetch('/api/mio-checkout', {
+async function requestMioLink(url: string, booking: Partial<CheckoutBooking>, headers: Record<string, string> = {}) {
+  const response = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...headers },
     cache: 'no-store',
-    body: JSON.stringify({ ...booking, returnPath: booking.returnPath ?? window.location.pathname }),
+    body: JSON.stringify(booking),
   });
   const body = await response.json().catch(() => null);
-  if (!response.ok || typeof body?.url !== 'string') {
+  if (!response.ok || typeof body?.url !== 'string' || typeof body?.ref !== 'string') {
     throw new Error(body?.error || 'Could not open MIO.');
   }
-  return body.url;
+  return { url: body.url as string, ref: body.ref as string };
+}
+
+export const startMioCheckout = (booking: CheckoutBooking) =>
+  requestMioLink('/api/mio-checkout', { ...booking, returnPath: booking.returnPath ?? window.location.pathname });
+
+export const startMioSandbox = async (email: string): Promise<string> => {
+  const { url } = await requestMioLink('/api/mio-checkout?sandbox=1', { email }, { 'X-Admin-Password': getAdminPassword() ?? '' });
+  return url;
 };
 
 /** "Try again": the same booking, in a fresh payment. Throws with a guest-facing message. */

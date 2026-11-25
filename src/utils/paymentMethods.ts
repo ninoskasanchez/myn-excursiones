@@ -98,8 +98,7 @@ export const isPaymentMethodConfigured = (
     case 'paypal':
       return paypalReady;
     case 'mio':
-      // MIO's API Checkout (configured in the payments admin), or a Milin link.
-      return mioReady || hasValue(brandSettings.mioLink);
+      return mioReady;
     case 'cash':
       return hasValue(brandSettings.phoneNumber);
     default:

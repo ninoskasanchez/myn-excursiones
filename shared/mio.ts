@@ -3,7 +3,8 @@ import { plainText, returnUrl, PaymentOrder } from './bankGateways';
 import type { PaymentReason } from './paymentOutcome';
 
 /**
- * MIO — "API Checkout", the Dominican wallet and acquirer's online payments.
+ * Deprecated Geopagos checkout, retained for historical MIO orders.
+ * New checkouts use the MIO Negocios Botón de Pago adapter in mioV5.ts.
  *
  * MIO runs on Geopagos, and its checkout is Geopagos' Payments API v4
  * (docs.geopagos.io → Acceptor API References → Payments ecommerce):

@@ -1,3 +1,5 @@
+import { settleMioV5 } from '../../shared/mioV5';
+import { readPaymentSecrets } from '../../shared/paymentConfig';
 import { PaymentEnv } from '../../shared/paymentConfig';
 import { isOrderId, readOrder, saveOrder } from '../../shared/bankGateways';
 import { refreshOrder } from '../../shared/paymentSettle';
@@ -39,7 +41,10 @@ export async function onRequest(context: { request: Request; env: PaymentEnv }) 
     return json({ error: 'That payment could not be found.' }, 404);
   }
 
-  if (await refreshOrder(env, order)) {
+  let review = false;
+  if (order.mioV5) {
+    review = await settleMioV5(env, await readPaymentSecrets(env), order) === 'review';
+  } else if (await refreshOrder(env, order)) {
     order.updatedAt = new Date().toISOString();
     await saveOrder(env, order);
   }
@@ -47,8 +52,9 @@ export async function onRequest(context: { request: Request; env: PaymentEnv }) 
   return json({
     provider: order.provider,
     /** 'card', 'paypal' or 'mio' — what the guest chose, which is all the page may name. */
-    method: order.provider === 'paypal' ? 'paypal' : order.provider === 'mio' ? 'mio' : 'card',
-    status: order.status,
+    method: order.provider === 'paypal' ? 'paypal' : order.provider === 'mio' && !order.mioV5?.card ? 'mio' : 'card',
+    status: review ? 'unverified' : order.status,
+    ...(order.mioV5 ? { mioV5: true, sandbox: order.mioV5.mode === 'test' } : {}),
     paid: order.status === 'paid',
     reason: order.reason ?? (order.status === 'paid' ? 'approved' : order.status === 'cancelled' ? 'cancelled' : ''),
     code: order.code ?? '',

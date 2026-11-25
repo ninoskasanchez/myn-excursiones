@@ -678,7 +678,7 @@ const CartView: React.FC<{ locale: string }> = ({ locale }) => {
             )}
             {methods.mio.visible && (
               <li className="flex items-center gap-2">
-                <span className="text-[0.65rem] font-black text-hibiscus-dark">MIO</span> {L({ en: 'MIO — card or MIO account', es: 'MIO — tarjeta o cuenta MIO', de: 'MIO — Karte oder MIO-Konto', fr: 'MIO — carte ou compte MIO' })}
+                <span className="text-[0.65rem] font-black text-hibiscus-dark">MIO</span> {L({ en: 'MIO — card', es: 'MIO — tarjeta', de: 'MIO — Karte', fr: 'MIO — carte' })}
               </li>
             )}
             <li className="flex items-center gap-2">

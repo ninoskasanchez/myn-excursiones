@@ -194,7 +194,7 @@ export const settleReturn = async (
     return;
   }
 
-  if (order.provider === 'mio') {
+  if (order.provider === 'mio' && !order.mioV5) {
     // MIO is asked either way: its "failure" address is also where a guest
     // lands who gave up, and only the link knows whether a payment went through.
     const verdict = await readMioLink(secrets, order);
@@ -253,7 +253,7 @@ export const refreshOrder = async (env: PaymentEnv, order: PaymentOrder): Promis
     }
   } else if (order.provider === 'stripe' && order.session) {
     await settleStripe(env, secrets, order, order.session);
-  } else if (order.provider === 'mio' && order.session) {
+  } else if (order.provider === 'mio' && !order.mioV5 && order.session) {
     const verdict = await readMioLink(secrets, order);
     if (verdict.known) applyMio(order, verdict);
   } else if (order.provider === 'paypal' && order.status === 'unverified' && order.session) {

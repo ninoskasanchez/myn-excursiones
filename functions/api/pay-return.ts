@@ -46,6 +46,8 @@ export async function onRequest(context: { request: Request; env: PaymentEnv }) 
     return redirect(`/?payment_ref=${encodeURIComponent(id)}`);
   }
 
+  if (order.mioV5) return redirect(guestLanding(order));
+
   // A guest who reloads the return page, or comes back twice, must not be
   // able to turn a settled answer into a different one.
   if (order.status !== 'pending' && order.status !== 'unverified') {

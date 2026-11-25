@@ -68,11 +68,7 @@ export interface BrandSettings {
    */
   azulLink?: string;
   cardnetLink?: string;
-  /**
-   * A MIO "Milin" payment link, made in the MIO app (Cobrar → Link de pago).
-   * Used when MIO's API Checkout is not configured; opened as it is, with the
-   * guest shown the amount to pay — or filled in when it carries {amount}.
-   */
+  /** Deprecated Milin link, retained for compatibility with stored branding. */
   mioLink?: string;
   /** Master switch for card payments. Off by default: nothing takes money by accident. */
   stripeEnabled?: boolean;
